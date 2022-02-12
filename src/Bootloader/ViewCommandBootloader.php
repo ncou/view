@@ -5,7 +5,7 @@ namespace Chiron\View\Bootloader;
 use Chiron\Core\Directories;
 use Chiron\Core\Container\Bootloader\AbstractBootloader;
 use Chiron\Console\Console;
-use Chiron\Views\Command\ViewListCommand;
+use Chiron\View\Command\ViewListCommand;
 
 final class ViewCommandBootloader extends AbstractBootloader
 {

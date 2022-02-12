@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Chiron\Views\Tests\Fixtures;
+namespace Chiron\View\Tests\Fixtures;
 
-class TemplateRendererMock implements \Chiron\Views\TemplateRendererInterface
+class TemplateRendererMock implements \Chiron\View\TemplateRendererInterface
 {
-    use \Chiron\Views\AttributesTrait;
-    use \Chiron\Views\ExtensionTrait;
+    use \Chiron\View\AttributesTrait;
+    use \Chiron\View\ExtensionTrait;
 
     public function render(string $name, array $params = []): string
     {

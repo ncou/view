@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Chiron\Views\Tests\Engine;
+namespace Chiron\View\Tests\Engine;
 
-use Chiron\Views\Engine\PhpRenderer;
-use Chiron\Views\TemplatePath;
+use Chiron\View\Engine\PhpRenderer;
+use Chiron\View\TemplatePath;
 use PHPUnit\Framework\TestCase;
 
 class PhpRendererTest extends TestCase

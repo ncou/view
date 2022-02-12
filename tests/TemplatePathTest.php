@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Chiron\Views\Tests;
+namespace Chiron\View\Tests;
 
-use Chiron\Views\TemplatePath;
+use Chiron\View\TemplatePath;
 use PHPUnit\Framework\TestCase;
 
 class TemplatePathTest extends TestCase

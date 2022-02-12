@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Chiron\Views\Tests;
+namespace Chiron\View\Tests;
 
-use Chiron\Views\Tests\Fixtures\TemplateRendererMock;
+use Chiron\View\Tests\Fixtures\TemplateRendererMock;
 use PHPUnit\Framework\TestCase;
 
 class AttributesTraitTest extends TestCase

@@ -33,9 +33,9 @@
     "extra": {
         "chiron": {
             "bootloaders": [
-                "Chiron\\View\\Bootloader\\PublishViewsBootloader",
-                "Chiron\\View\\Bootloader\\ViewsCommandBootloader",
-                "Chiron\\View\\Bootloader\\ViewsBootloader"
+                "Chiron\\View\\Bootloader\\PublishViewBootloader",
+                "Chiron\\View\\Bootloader\\ViewCommandBootloader",
+                "Chiron\\View\\Bootloader\\ViewBootloader"
             ],
             "providers": [
                 "Chiron\\View\\Provider\\PhpRendererServiceProvider"
