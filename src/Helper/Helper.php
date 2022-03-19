@@ -11,6 +11,13 @@ use Psr\Http\Message\ResponseInterface;
 // TODO : passer la classe en Abstract ????
 class Helper
 {
+     /**
+     * List of helpers used by this helper
+     *
+     * @var array
+     */
+    protected $helpers = [];
+
     /**
      * A helper lookup table used to lazy load helper objects.
      *

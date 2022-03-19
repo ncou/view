@@ -9,6 +9,9 @@ use Chiron\View\ExtensionTrait;
 use Chiron\View\TemplateRendererInterface;
 use Chiron\View\TemplatePath;
 
+//https://github.com/hyperf/view-engine/blob/master/src/View.php#L125
+//https://github.com/hyperf/view/blob/master/src/Render.php#L90
+
 //https://github.com/yiisoft/yii-twig/blob/master/src/ViewRenderer.php
 
 // TODO : faire une classe abstraite avec le attributes et extension trait.
