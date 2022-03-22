@@ -33,6 +33,7 @@
     "extra": {
         "chiron": {
             "bootloaders": [
+                "Chiron\\View\\Bootloader\\ViewDirectoryBootloader",
                 "Chiron\\View\\Bootloader\\PublishViewBootloader",
                 "Chiron\\View\\Bootloader\\ViewCommandBootloader",
                 "Chiron\\View\\Bootloader\\ViewBootloader"
