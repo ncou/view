@@ -26,7 +26,7 @@ final class StringTemplate
      *
      * @var array<string, mixed>
      */
-    protected $_config = []; // TODO : à virer !!!
+    protected $_config = [];
 
     /**
      * List of attributes that can be made compact.
@@ -82,14 +82,14 @@ final class StringTemplate
      *
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [];
+    protected $_defaultConfig = []; // TODO : à virer !!!
 
     /**
      * A stack of template sets that have been stashed temporarily.
      *
      * @var array
      */
-    protected $_configStack = [];
+    protected $_configStack = []; // TODO : à virer !!!
 
     /**
      * Contains the list of compiled templates
@@ -103,6 +103,7 @@ final class StringTemplate
      *
      * @param array<string, mixed> $config A set of templates to add.
      */
+    // TODO : vérifier l'utilité du $config
     public function __construct(array $config = [])
     {
         $this->add($config);
@@ -113,6 +114,7 @@ final class StringTemplate
      *
      * @return void
      */
+    // à virer
     public function push(): void
     {
         $this->_configStack[] = [
@@ -126,6 +128,7 @@ final class StringTemplate
      *
      * @return void
      */
+    // à virer
     public function pop(): void
     {
         if (empty($this->_configStack)) {
@@ -149,9 +152,12 @@ final class StringTemplate
      * @param array<string> $templates An associative list of named templates.
      * @return $this
      */
+    // TODO : passer la méthode en private et le return type en void
+    // TODO : eventuellement virer cette méthode et passer les 2 lignes de code dans le constructeur
     public function add(array $templates)
     {
-        $this->setConfig($templates);
+        //$this->setConfig($templates);
+        $this->_config = $templates;
         $this->_compileTemplates(array_keys($templates));
 
         return $this;
@@ -193,6 +199,7 @@ final class StringTemplate
      * @param string $file The file to load
      * @return void
      */
+    // TODO : à virer
     public function load(string $file): void
     {
         if ($file === '') {
@@ -210,6 +217,7 @@ final class StringTemplate
      * @param string $name The template to remove.
      * @return void
      */
+    // TODO : à virer
     public function remove(string $name): void
     {
         $this->setConfig($name, null);
@@ -338,6 +346,7 @@ final class StringTemplate
      * @param string $useIndex if you are inputting an array with an element other than default of 'class'.
      * @return array<string>|string
      */
+    /*
     public function addClass($input, $newClass, string $useIndex = 'class')
     {
         // NOOP
@@ -370,9 +379,9 @@ final class StringTemplate
         $input = Hash::insert($input, $useIndex, $class);
 
         return $input;
-    }
+    }*/
 
-
+    // TODO : à virer
     public function getConfig(?string $key = null, $default = null)
     {
         $return = $this->_configRead($key);
@@ -386,6 +395,7 @@ final class StringTemplate
      * @param string|null $key Key to read.
      * @return mixed
      */
+    // TODO : à virer
     protected function _configRead(?string $key)
     {
         if ($key === null) {
@@ -410,6 +420,7 @@ final class StringTemplate
         return $return;
     }
 
+    // TODO : à virer
     public function setConfig($key, $value = null, $merge = true)
     {
         $this->_configWrite($key, $value, $merge);
@@ -427,6 +438,7 @@ final class StringTemplate
      * @return void
      * @throws \Cake\Core\Exception\CakeException if attempting to clobber existing config
      */
+    // TODO : à virer
     protected function _configWrite($key, $value, $merge = false): void
     {
         if (is_string($key) && $value === null) {

@@ -39,7 +39,6 @@ class Helper
         }
     }
 
-
     /**
      * Provide non fatal errors on missing method calls.
      *

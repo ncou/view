@@ -22,9 +22,9 @@ final class PhpRenderer implements TemplateRendererInterface
 
     private $extension = 'phtml';
 
-    private $engine;
-
+    private $context;
     private $finder;
+    private $engine;
 
     /**
      * Create a new file view loader instance.
@@ -35,6 +35,7 @@ final class PhpRenderer implements TemplateRendererInterface
     // TODO : ne passer qu'une seule extension en paramétre ----> Ne pas utiliser un tableau. Il faudra aussi retirer la méthode getPossibleViewFiles() de la classe FileViewFinder !!!!
     public function __construct(array $paths = [], ?array $extensions = null)
     {
+        $this->context = new ViewContext();
         $this->engine = new PhpEngine();
         $this->finder = new FileViewFinder($paths, $extensions);
     }
@@ -50,10 +51,16 @@ final class PhpRenderer implements TemplateRendererInterface
      */
     public function render(string $name, array $params = []): string
     {
+        if ($this->context->fetch('title') === '') {
+            $this->assign('title', $name); //TODO : faire un Str::Humanize() ou Str::title() sur le titre.
+            //https://github.com/cakephp/cakephp/blob/5.x/src/View/View.php#L829
+            //https://github.com/cakephp/cakephp/blob/876a11e172b0b33710b1fbddd94de6d1618d352b/src/Utility/Inflector.php#L427
+        }
+
         $path = $this->finder->findTemplate($name);
         $params = array_merge($this->attributes, $params);
 
-        return $this->engine->render($path, $params);
+        return $this->engine->render($this->context, $path, $params);
     }
 
     /**
@@ -148,4 +155,20 @@ final class PhpRenderer implements TemplateRendererInterface
     {
         call_user_func_array(array('\\Twig_Environment', $name), $arguments);
     }*/
+
+
+    /**
+     * Set the content for a block. This will overwrite any
+     * existing content.
+     *
+     * @param string $name Name of the block
+     * @param string $value The content for the block.
+     *
+     */
+    // TODO : faire un return $this pour chainer les appels ????
+    public function assign(string $name, string $value): void
+    {
+        $this->context->assign($name, $value);
+    }
+
 }

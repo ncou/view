@@ -217,7 +217,7 @@ final class HtmlHelper extends Helper
             // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!! https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
             $url = $this->Url->build($title);
             $title = htmlspecialchars_decode($url, ENT_QUOTES);
-            $title = h(urldecode($title));
+            $title = e(urldecode($title));
             $escapeTitle = false;
         }
 
@@ -229,7 +229,7 @@ final class HtmlHelper extends Helper
         }
 
         if ($escapeTitle === true) {
-            //$title = h($title);
+            $title = e($title);
         } elseif (is_string($escapeTitle)) {
             /** @psalm-suppress PossiblyInvalidArgument */
             $title = htmlentities($title, ENT_QUOTES, $escapeTitle);
@@ -245,7 +245,7 @@ final class HtmlHelper extends Helper
             $confirm = $this->_confirm('return true;', 'return false;');
             $options['data-confirm-message'] = $confirmMessage;
             $options['onclick'] = $templater->format('confirmJs', [
-                'confirmMessage' => h($confirmMessage),
+                'confirmMessage' => e($confirmMessage),
                 'confirm' => $confirm,
             ]);
         }
@@ -590,7 +590,7 @@ final class HtmlHelper extends Helper
     public function tag(string $name, ?string $text = null, array $options = []): string
     {
         if (isset($options['escape']) && $options['escape']) {
-            $text = h($text);
+            $text = e($text);
             unset($options['escape']);
         }
         if ($text === null) {
@@ -621,7 +621,7 @@ final class HtmlHelper extends Helper
     public function para(?string $class, ?string $text, array $options = []): string
     {
         if (!empty($options['escape'])) {
-            $text = h($text);
+            $text = e($text);
         }
         if ($class) {
             $options['class'] = $class;
@@ -938,6 +938,7 @@ final class HtmlHelper extends Helper
      */
     public function charset(?string $charset = null): string
     {
+        //TODO : code à corriger en utilisant les settings de l'application !!!!
         if (empty($charset)) {
             $charset = 'utf-8';//strtolower((string)Configure::read('App.encoding'));
         }
@@ -972,6 +973,7 @@ final class HtmlHelper extends Helper
      *
      * @return \Cake\View\StringTemplate
      */
+    // TODO : à mettre dans un trait car ca sera utilisé par plusieurs Helpers !!!!
     public function templater(): StringTemplate
     {
         $templater = new StringTemplate();
@@ -979,6 +981,7 @@ final class HtmlHelper extends Helper
         $templates = $this->_defaultConfig['templates']; //$this->getConfig('templates');
         if ($templates) {
             if (is_string($templates)) {
+                // TODO : Ces 2 lignes sont à virer car on va pas charger le template depuis un fichier, mais on utilise directement un tableau !!!
                 $templater->add($this->_defaultConfig['templates']);
                 $templater->load($templates);
             } else {

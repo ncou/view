@@ -107,6 +107,8 @@ final class FileViewFinder
         $this->errorCache[$name] = sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]));
 
         //https://github.com/cakephp/cakephp/blob/f8bbd71978e08282f437551ef4380d66c1089560/src/View/Exception/MissingTemplateException.php
+        // https://github.com/cakephp/cakephp/blob/4.x/src/View/Exception/MissingTemplateException.php
+        // https://github.com/yiisoft/view/blob/master/src/Exception/ViewNotFoundException.php
         throw new \InvalidArgumentException($this->errorCache[$name]);
     }
 
