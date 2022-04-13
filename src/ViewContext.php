@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Chiron\View\Engine;
+namespace Chiron\View;
 
 use Throwable;
+
+// TODO : ajouter une méthode $this->escape() et $this->e() dans cette classe au lieu d'utiliser une fonction globale e() ????
+//https://github.com/thephpleague/plates/blob/v3/src/Template/Template.php#L359
 
 // https://github.com/yiisoft/view/blob/c81f3b910528dcefa3f02ef8a118da4fe16df218/src/WebView.php#L47
 //https://github.com/cakephp/cakephp/blob/4.x/src/View/View.php
@@ -47,34 +50,6 @@ use Throwable;
 // TODO : renommer en viewState ????
 final class ViewContext
 {
-    /**
-     * This means the location is in the head section.
-     */
-    public const POSITION_HEAD = 1;
-
-    /**
-     * This means the location is at the beginning of the body section.
-     */
-    public const POSITION_BEGIN = 2;
-
-    /**
-     * This means the location is at the end of the body section.
-     */
-    public const POSITION_END = 3;
-
-    /**
-     * This means the JavaScript code block will be executed when HTML document composition is ready.
-     */
-    public const POSITION_READY = 4;
-
-    /**
-     * This means the JavaScript code block will be executed when HTML page is completely loaded.
-     */
-    public const POSITION_LOAD = 5;
-
-    private array $cssFiles;
-    private array $jsFiles;
-
     private array $blocks;
 
     /**
@@ -84,6 +59,7 @@ final class ViewContext
      */
     protected $helpers = [];
 
+    // TODO : il faut surement faire étendre cette classe ViewContext de la classe Helper pour accéder au 2 helpers ci dessous !!!!
     public function __construct()
     {
         $this->helpers['Url']['class'] = \Chiron\View\Helper\UrlHelper::class;
@@ -135,15 +111,13 @@ final class ViewContext
             throw new InvalidArgumentException(
                 sprintf(
                     'CSS file should be string. Got %s.',
-                    $this->getType($file),
+                    get_debug_type($file),
                 )
             );
         }
 
-        $position = (int) ($config[1] ?? self::POSITION_HEAD);
-
-        unset($config[0], $config[1]);
-        $this->registerCssFile($file, $position, $config, $key);
+        unset($config[0], $config[1]); // TODO : virer le $config[1] car ca ne sert à rien on n'a pas d'index à 1 dans le tableau !!!!
+        $this->registerCssFile($file, $config, $key);
     }
 
     /**
@@ -159,42 +133,13 @@ final class ViewContext
      * @param string|null $key The key that identifies the CSS script file. If null, it will use $url as the key.
      * If two CSS files are registered with the same key, the latter will overwrite the former.
      */
+    // TODO : virer le paramétre $key
     public function registerCssFile(
         string $url,
-        int $position = self::POSITION_HEAD,
         array $options = [],
         string $key = null
     ): void {
-        if (!$this->isValidCssPosition($position)) {
-            throw new InvalidArgumentException('Invalid position of CSS file.');
-        }
-
-        //$this->cssFiles[$position][$key ?: $url] = Html::cssFile($url, $options)->render();
-        $this->cssFiles[] = [$url, $options];
-    }
-
-    public function fetchCssFiles(): array
-    {
-        return $this->cssFiles[0];
-    }
-
-    /**
-     * @param mixed $position
-     *
-     * @psalm-assert =int $position
-     */
-    // TODO : modifier le typehint car le $position sera toujours un int !!!
-    private function isValidCssPosition($position): bool
-    {
-        return in_array(
-            $position,
-            [
-                self::POSITION_HEAD,
-                self::POSITION_BEGIN,
-                self::POSITION_END,
-            ],
-            true,
-        );
+        $this->assign('css', $this->Html->css($url, $options), append: true);
     }
 
     /**
@@ -227,15 +172,13 @@ final class ViewContext
             throw new InvalidArgumentException(
                 sprintf(
                     'JS file should be string. Got %s.',
-                    $this->getType($file),
+                    get_debug_type($file),
                 )
             );
         }
 
-        $position = (int) ($config[1] ?? self::POSITION_END);
-
-        unset($config[0], $config[1]);
-        $this->registerJsFile($file, $position, $config, $key);
+        unset($config[0], $config[1]); // TODO : virer le $config[1] car ca ne sert à rien on n'a pas d'index à 1 dans le tableau !!!!
+        $this->registerJsFile($file, $config, $key);
     }
 
     /**
@@ -260,61 +203,14 @@ final class ViewContext
      * Note that position option takes precedence, thus files registered with the same key, but different
      * position option will not override each other.
      */
+    // TODO : virer le paramétre $key
     public function registerJsFile(
         string $url,
-        int $position = self::POSITION_END,
         array $options = [],
         string $key = null
     ): void {
-        if (!$this->isValidJsPosition($position)) {
-            throw new InvalidArgumentException('Invalid position of JS file.');
-        }
-
-        //$this->jsFiles[$position][$key ?: $url] = Html::javaScriptFile($url, $options)->render();
-        $this->jsFiles[] = [$url, $options];
+        $this->assign('script', $this->Html->script($url, $options), append: true);
     }
-
-    /**
-     * @param mixed $position
-     *
-     * @psalm-assert =int $position
-     */
-    // TODO : modifier le typehint car le $position sera toujours un int !!!
-    private function isValidJsPosition($position): bool
-    {
-        return in_array(
-            $position,
-            [
-                self::POSITION_HEAD,
-                self::POSITION_BEGIN,
-                self::POSITION_END,
-                self::POSITION_READY,
-                self::POSITION_LOAD,
-            ],
-            true,
-        );
-    }
-
-    /**
-     * It processes the JS configuration generated by the asset manager and converts it into HTML code.
-     *
-     * @param array $jsFiles
-     */
-    public function fetchJsFiles(): array
-    {
-        return $this->jsFiles[0];
-    }
-
-    /**
-     * @param mixed $value
-     */
-    // TODO : utiliser la méthode debug_type() pour récupérer le type !!!
-    private function getType($value): string
-    {
-        return is_object($value) ? get_class($value) : gettype($value);
-    }
-
-
 
     /**
      * Set the content for a block. This will overwrite any
@@ -322,12 +218,21 @@ final class ViewContext
      *
      * @param string $name Name of the block
      * @param string $value The content for the block.
+     * @param bool $append Concatenate the content with existing data.
      *
      */
     // TODO : faire un return $this pour chainer les appels ????
-    public function assign(string $name, string $value): void
+    public function assign(string $name, string $value, bool $append = false): void
     {
-        $this->blocks[$name] = $value;
+        if (!isset($this->blocks[$name])) {
+            $this->blocks[$name] = '';
+        }
+
+        if ($append === false) {
+            $this->blocks[$name] = $value;
+        } else {
+            $this->blocks[$name] .= $value;
+        }
     }
 
     /**
@@ -339,8 +244,34 @@ final class ViewContext
      * @return string The block content or $default if the block does not exist.
      * @see \Cake\View\ViewBlock::get()
      */
+    // TODO : Créer une méthode proxy dans la classe View pour récupérer ces informations histoire de pouvoir les utiliser dans les controllers par exemple
     public function fetch(string $name, string $default = ''): string
     {
         return $this->blocks[$name] ?? $default;
     }
+
+    /**
+     * Check if a block exists
+     *
+     * @param string $name Name of the block
+     * @return bool
+     */
+    // TODO : si on garde cette méthode il faudra créer une méthode proxy dans la classe View pour récupérer ces informations histoire de pouvoir les utiliser dans les controllers par exemple
+    /*
+    public function exists(string $name): bool
+    {
+        return isset($this->blocks[$name]);
+    }*/
+
+    /**
+     * Get the names of all the existing blocks.
+     *
+     * @return array<string> An array containing the blocks.
+     */
+    // TODO : si on garde cette méthode il faudra créer une méthode proxy dans la classe View pour récupérer ces informations histoire de pouvoir les utiliser dans les controllers par exemple
+    /*
+    public function keys(): array
+    {
+        return array_keys($this->blocks);
+    }*/
 }

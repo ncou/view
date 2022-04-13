@@ -2,9 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Chiron\View\Engine;
+namespace Chiron\View;
 
-final class FileViewFinder
+use Chiron\View\Exception\ViewException;
+use Chiron\Filesystem\Filesystem;
+
+//https://github.com/spiral/views/blob/5d2123adc3cca2dc3e3c4ca0b9fe77d5ab2bf660/src/ViewLoader.php
+
+/**
+ * Loads and locates view files associated with specific extensions.
+ */
+// TODO : créer une LoaderInterface ????
+class ViewLoader
 {
     /** Identifier of the default namespace. */
     public const DEFAULT_NAMESPACE = '__DEFAULT__';
@@ -16,18 +25,18 @@ final class FileViewFinder
      */
     public const NAMESPACE_DELIMITER = '::';
 
-    private $paths = [];
+    private array $paths = [];
 
-    private $cache = [];
+    private array $cache = [];
 
-    private $errorCache = [];
+    private array $errorCache = [];
 
     /**
      * Register a view extension with the finder.
      *
      * @var array
      */
-    private $extensions = ['phtml', 'html', 'php'];
+    private array $extensions = ['phtml', 'html', 'php'];
 
     /**
      * Create a new file view loader instance.
@@ -106,6 +115,9 @@ final class FileViewFinder
         // TODO : ajouter aussi les extensions recherchées !!!!
         $this->errorCache[$name] = sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths[$namespace]));
 
+        //https://github.com/cakephp/cakephp/blob/f8bbd71978e08282f437551ef4380d66c1089560/src/View/Exception/MissingTemplateException.php
+        // https://github.com/cakephp/cakephp/blob/4.x/src/View/Exception/MissingTemplateException.php
+        // https://github.com/yiisoft/view/blob/master/src/Exception/ViewNotFoundException.php
         throw new \InvalidArgumentException($this->errorCache[$name]);
     }
 
@@ -252,4 +264,29 @@ final class FileViewFinder
     {
         return strpos($name, static::NAMESPACE_DELIMITER) > 0;
     }
+
+
+
+
+
+
+
+
+    // TODO : méthode temporaire !!!! en plus il faudrait que ca clone la classe avant de la retourner, et donc pas utiliser return $this !!!!
+    public function withExtension(string $extension): self
+    {
+        if (($index = array_search($extension, $this->extensions)) !== false) {
+            unset($this->extensions[$index]);
+        }
+        array_unshift($this->extensions, $extension);
+
+        return $this;
+    }
+
+    // TODO : méthode temporaire !!!!
+    public function load(string $name): string
+    {
+        return $this->findTemplate($name);
+    }
+
 }
