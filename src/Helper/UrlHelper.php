@@ -132,7 +132,8 @@ final class UrlHelper
         );*/
 
         // TODO : code temporaire !!!!
-        $webPath = '/' . $path;
+        //$webPath = '/' . $path;
+        $webPath = '' . $path;
         if (strpos($webPath, '//') !== false) {
             $webPath = str_replace('//', '/', $webPath);
         }

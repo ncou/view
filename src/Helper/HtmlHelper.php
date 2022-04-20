@@ -750,7 +750,8 @@ final class HtmlHelper extends Helper
                 $mimeType = $this->getMimeType(pathinfo($path, PATHINFO_EXTENSION));
             }
 
-            // TODO : attention il y a une erreur dans le code d'origine de cakephp car si le mimetype n'est pas trouvée c'est false qui est stocké dans le mimeType, et losqu'on va utiliser la fonction preg_match qui attend un string pour la comparaison cela va péter !!!!
+            // TODO : attention il se passe quoi si on retourne un tableau de mime (par exemple pour l'extension 'xhtml')
+            // TODO : attention il y a une erreur dans le code d'origine de cakephp car si le mimetype n'est pas trouvée c'est false qui est stocké dans le mimeType, et lorsqu'on va utiliser la fonction preg_match qui attend un string pour la comparaison cela va péter !!!!
             if (preg_match('#^video/#', $mimeType)) {
                 $tag = 'video';
             } else {
@@ -761,7 +762,8 @@ final class HtmlHelper extends Helper
         if (isset($options['poster'])) {
             $options['poster'] = $this->Url->assetUrl(
                 $options['poster'],
-                ['pathPrefix' => Configure::read('App.imageBaseUrl')] + $options
+                //['pathPrefix' => Configure::read('App.imageBaseUrl')] + $options
+                ['pathPrefix' => ''] + $options
             );
         }
         $text = $options['text'];
@@ -784,11 +786,19 @@ final class HtmlHelper extends Helper
      * @param string $alias the content type alias to map
      * @return array|string|false String mapped mime type or false if $alias is not mapped
      */
-    public function getMimeType(string $alias)
+    // https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/src/Http/Response.php#L134
+    //https://github.com/symfony/mime/blob/6.1/MimeTypes.php#L1820
+    //https://github.com/yiisoft/yii2/blob/master/framework/helpers/mimeTypes.php
+    protected function getMimeType(string $alias)
     {
         // TODO : ajouter la liste de tous les mimes !!!! pour l'instant c'est juste un exemple !!!!
         $mimeTypes = [
             'html' => ['text/html', '*/*'],
+            'webp' => 'image/webp',
+            'ogv' => 'video/ogg',
+            'webm' => 'video/webm',
+            'mp4' => 'video/mp4',
+            'mp3' => 'audio/mpeg',
             'json' => 'application/json',
             'xml' => ['application/xml', 'text/xml'],
             'xhtml' => ['application/xhtml+xml', 'application/xhtml', 'text/xhtml'],
@@ -798,7 +808,9 @@ final class HtmlHelper extends Helper
             'bcpio' => 'application/x-bcpio'
         ];
 
-        return $mimeTypes[$alias] ?? false;
+        return $mimeTypes[$alias] ?? false; // TODO : forcer le $alias en strtolower et renommer ce paramétre en $extension, et retourner un tableau vide si on n'a pas trouvé le mime. Il faudra aussi mettre le return type de la méthode à "array" et pour chaque valeur il faut que ce soit un tableau même d'un seul élément string !!!
+
+        //return $mimeTypes[strtolower($alias)] ?? [];
     }
 
     /**
@@ -983,6 +995,7 @@ final class HtmlHelper extends Helper
     }
 
 
+/*
     public function templater_SAVE(): StringTemplate
     {
         $templater = new StringTemplate();
@@ -1000,5 +1013,5 @@ final class HtmlHelper extends Helper
 
         return $templater;
     }
-
+*/
 }
