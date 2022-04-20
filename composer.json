@@ -39,6 +39,15 @@
         }
     },
     "extra": {
+        "captainhook": {
+            "force-install": true
+        },
+        "chiron/devtools": {
+            "command-prefix": "dev"
+        },
+        "ramsey/conventional-commits": {
+            "configFile": "conventional-commits.json"
+        },
         "chiron": {
             "bootloaders": [
                 "Chiron\\View\\Bootloader\\ViewDirectoryBootloader",
