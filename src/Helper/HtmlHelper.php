@@ -7,6 +7,7 @@ namespace Chiron\View\Helper;
 use Chiron\ResponseCreator\ResponseCreator;
 use Chiron\View\TemplateRendererInterface;
 use Psr\Http\Message\ResponseInterface;
+use Chiron\View\StringTemplate;
 
 // TODO : passer les protected en private car la classe est final !!!!
 final class HtmlHelper extends Helper

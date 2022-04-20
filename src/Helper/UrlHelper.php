@@ -42,7 +42,7 @@ final class UrlHelper
         $url = $this->routerUrl($url, $options['fullBase']);
         if ($options['escape']) {
             /** @var string $url */
-            //$url = h($url);
+            $url = e($url);
         }
 
         return $url;
@@ -243,6 +243,19 @@ final class UrlHelper
             $params = $context['params'];
         }
 */
+
+
+        $params = [
+            'plugin' => null,
+            'controller' => null,
+            'action' => 'index',
+            '_ext' => null,
+        ];
+
+
+
+
+
         $frag = '';
 
         if (is_array($url)) {
@@ -262,7 +275,7 @@ final class UrlHelper
             }
             unset($url['_ssl'], $url['_full'], $url['#']);
 
-            $url = static::_applyUrlFilters($url);
+            //$url = static::_applyUrlFilters($url);
 
             if (!isset($url['_name'])) {
                 // Copy the current action if the controller is the current one.
@@ -296,7 +309,13 @@ final class UrlHelper
             }
             $context['params'] = $params;
 
-            $output = static::$_collection->match($url, $context);
+
+
+            // TODO : à corriger !!!!!! code temporaire
+            //$output = static::$_collection->match($url, $context);
+            $output = $url;
+
+
         } else {
             $url = (string)$url;
 

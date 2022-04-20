@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Chiron\View\Helper;
+namespace Chiron\View;
 
 use Chiron\ResponseCreator\ResponseCreator;
 use Chiron\View\TemplateRendererInterface;
@@ -11,6 +11,10 @@ use Psr\Http\Message\ResponseInterface;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Core\Exception\CakeException;
 use RuntimeException;
+
+// TODO : mettre cette classe à la racine du package view, et pas dans le repertoire Helper !!!!
+
+// TODO : on deux méthode séparée dans cette classe, une pour formater une string template, l'autre pour formatter des attributs html. Il faudrait surement faire 2 classes séparées !!!! dans une classe on ajouterai la méthode "format()" et dans l'autre classe "formatAttribute" ca serai plus propre !!!!
 
 /**
  * Provides an interface for registering and inserting
