@@ -78,20 +78,6 @@ final class StringTemplate
     ];
 
     /**
-     * The default templates this instance holds.
-     *
-     * @var array<string, mixed>
-     */
-    protected $_defaultConfig = []; // TODO : à virer !!!
-
-    /**
-     * A stack of template sets that have been stashed temporarily.
-     *
-     * @var array
-     */
-    protected $_configStack = []; // TODO : à virer !!!
-
-    /**
      * Contains the list of compiled templates
      *
      * @var array<string, array>
@@ -103,38 +89,10 @@ final class StringTemplate
      *
      * @param array<string, mixed> $config A set of templates to add.
      */
-    // TODO : vérifier l'utilité du $config
+    // TODO : renommer le paramétre en $templates !!!!
     public function __construct(array $config = [])
     {
         $this->add($config);
-    }
-
-    /**
-     * Push the current templates into the template stack.
-     *
-     * @return void
-     */
-    // à virer
-    public function push(): void
-    {
-        $this->_configStack[] = [
-            $this->_config,
-            $this->_compiled,
-        ];
-    }
-
-    /**
-     * Restore the most recently pushed set of templates.
-     *
-     * @return void
-     */
-    // à virer
-    public function pop(): void
-    {
-        if (empty($this->_configStack)) {
-            return;
-        }
-        [$this->_config, $this->_compiled] = array_pop($this->_configStack);
     }
 
     /**
@@ -171,11 +129,13 @@ final class StringTemplate
      */
     protected function _compileTemplates(array $templates = []): void
     {
+        // TODO : virer l'initialisation du paramétre $templates par défaut à [], ce qui permettra de virer le if(empty) ci dessous !!!
         if (empty($templates)) {
             $templates = array_keys($this->_config);
         }
         foreach ($templates as $name) {
-            $template = $this->getConfig($name);
+            //$template = $this->getConfig($name);
+            $template = $this->_config[$name] ?? null;
             if ($template === null) {
                 $this->_compiled[$name] = [null, null];
             }
@@ -187,41 +147,6 @@ final class StringTemplate
                 $matches[1],
             ];
         }
-    }
-
-    /**
-     * Load a config file containing templates.
-     *
-     * Template files should define a `$config` variable containing
-     * all the templates to load. Loaded templates will be merged with existing
-     * templates.
-     *
-     * @param string $file The file to load
-     * @return void
-     */
-    // TODO : à virer
-    public function load(string $file): void
-    {
-        if ($file === '') {
-            throw new CakeException('String template filename cannot be an empty string');
-        }
-
-        $loader = new PhpConfig();
-        $templates = $loader->read($file);
-        $this->add($templates);
-    }
-
-    /**
-     * Remove the named template.
-     *
-     * @param string $name The template to remove.
-     * @return void
-     */
-    // TODO : à virer
-    public function remove(string $name): void
-    {
-        $this->setConfig($name, null);
-        unset($this->_compiled[$name]);
     }
 
     /**
@@ -237,12 +162,14 @@ final class StringTemplate
         if (!isset($this->_compiled[$name])) {
             throw new RuntimeException("Cannot find template named '$name'.");
         }
+
         [$template, $placeholders] = $this->_compiled[$name];
 
         if (isset($data['templateVars'])) {
             $data += $data['templateVars'];
             unset($data['templateVars']);
         }
+
         $replace = [];
         foreach ($placeholders as $placeholder) {
             $replacement = $data[$placeholder] ?? null;
@@ -325,7 +252,7 @@ final class StringTemplate
         $truthy = [1, '1', true, 'true', $key];
         $isMinimized = isset($this->_compactAttributes[$key]);
         if (!preg_match('/\A(\w|[.-])+\z/', $key)) {
-            $key = h($key);
+            $key = e($key);
         }
         if ($isMinimized && in_array($value, $truthy, true)) {
             return "$key=\"$key\"";
@@ -334,8 +261,7 @@ final class StringTemplate
             return '';
         }
 
-        //return $key . '="' . ($escape ? h($value) : $value) . '"';
-        return $key . '="' . ($escape ? $value : $value) . '"'; // TODO : créer la méthode h() pour escape le texte.
+        return $key . '="' . ($escape ? e($value) : $value) . '"';
     }
 
     /**
@@ -380,111 +306,4 @@ final class StringTemplate
 
         return $input;
     }*/
-
-    // TODO : à virer
-    public function getConfig(?string $key = null, $default = null)
-    {
-        $return = $this->_configRead($key);
-
-        return $return ?? $default;
-    }
-
-    /**
-     * Reads a config key.
-     *
-     * @param string|null $key Key to read.
-     * @return mixed
-     */
-    // TODO : à virer
-    protected function _configRead(?string $key)
-    {
-        if ($key === null) {
-            return $this->_config;
-        }
-
-        if (strpos($key, '.') === false) {
-            return $this->_config[$key] ?? null;
-        }
-
-        $return = $this->_config;
-
-        foreach (explode('.', $key) as $k) {
-            if (!is_array($return) || !isset($return[$k])) {
-                $return = null;
-                break;
-            }
-
-            $return = $return[$k];
-        }
-
-        return $return;
-    }
-
-    // TODO : à virer
-    public function setConfig($key, $value = null, $merge = true)
-    {
-        $this->_configWrite($key, $value, $merge);
-
-        return $this;
-    }
-
-    /**
-     * Writes a config key.
-     *
-     * @param array<string, mixed>|string $key Key to write to.
-     * @param mixed $value Value to write.
-     * @param string|bool $merge True to merge recursively, 'shallow' for simple merge,
-     *   false to overwrite, defaults to false.
-     * @return void
-     * @throws \Cake\Core\Exception\CakeException if attempting to clobber existing config
-     */
-    // TODO : à virer
-    protected function _configWrite($key, $value, $merge = false): void
-    {
-        if (is_string($key) && $value === null) {
-            $this->_configDelete($key);
-
-            return;
-        }
-
-        if ($merge) {
-            $update = is_array($key) ? $key : [$key => $value];
-            if ($merge === 'shallow') {
-                $this->_config = array_merge($this->_config, Hash::expand($update));
-            } else {
-                $this->_config = Hash::merge($this->_config, Hash::expand($update));
-            }
-
-            return;
-        }
-
-        if (is_array($key)) {
-            foreach ($key as $k => $val) {
-                $this->_configWrite($k, $val);
-            }
-
-            return;
-        }
-
-        if (strpos($key, '.') === false) {
-            $this->_config[$key] = $value;
-
-            return;
-        }
-
-        $update = &$this->_config;
-        $stack = explode('.', $key);
-
-        foreach ($stack as $k) {
-            if (!is_array($update)) {
-                throw new CakeException(sprintf('Cannot set %s value', $key));
-            }
-
-            $update[$k] = $update[$k] ?? [];
-
-            $update = &$update[$k];
-        }
-
-        $update = $value;
-    }
 }

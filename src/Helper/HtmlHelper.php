@@ -976,6 +976,12 @@ final class HtmlHelper extends Helper
     // TODO : à mettre dans un trait car ca sera utilisé par plusieurs Helpers !!!!
     public function templater(): StringTemplate
     {
+        return new StringTemplate($this->_defaultConfig['templates']);
+    }
+
+
+    public function templater_SAVE(): StringTemplate
+    {
         $templater = new StringTemplate();
 
         $templates = $this->_defaultConfig['templates']; //$this->getConfig('templates');

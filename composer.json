@@ -1,34 +1,42 @@
 {
     "name": "chiron/view",
-    "type": "library",
     "description": "View Template interface for the Chiron framework",
-    "keywords": ["template","chiron","renderer"],
-    "homepage": "https://github.com/ncou/Chiron-Template",
     "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "template",
+        "chiron",
+        "renderer"
+    ],
+    "homepage": "https://github.com/ncou/Chiron-Template",
     "require": {
-        "php": "^8.0|^8.1",
+        "php": "^8.0 || ^8.1",
         "chiron/core": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "phpstan/phpstan": "^0.12",
-        "phpstan/phpstan-phpunit": "^0.12",
-        "chiron/coding-standard": "^3.0"
+        "chiron/devtools": "^1.0"
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Chiron\\View\\": "src/"
         }
     },
-    "autoload-dev" : {
-        "psr-4": { "Chiron\\View\\Tests\\" : "tests/" }
+    "autoload-dev": {
+        "psr-4": {
+            "Chiron\\View\\Tests\\": "tests/"
+        }
     },
-    "scripts": {
-        "phpunit": "phpunit --colors=always",
-        "test-coverage": "phpunit --coverage-clover clover.xml",
-        "phpstan": "phpstan analyse --ansi",
-        "check-style": "phpcs src tests",
-        "fix-style": "phpcbf src tests"
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "phpstan/extension-installer": true,
+            "ergebnis/composer-normalize": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "captainhook/plugin-composer": true,
+            "chiron/devtools": true
+        }
     },
     "extra": {
         "chiron": {
@@ -39,6 +47,11 @@
             ]
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "scripts": {
+        "check-style": "phpcs src tests",
+        "fix-style": "phpcbf src tests",
+        "phpstan": "phpstan analyse --ansi",
+        "phpunit": "phpunit --colors=always",
+        "test-coverage": "phpunit --coverage-clover clover.xml"
+    }
 }
