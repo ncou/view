@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 use Chiron\View\StringTemplate;
 use Chiron\View\Helper\HtmlHelper;
 
+//https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/tests/TestCase/View/Helper/HtmlHelperTest.php
+
 class HtmlHelperTest extends AbstractHelperTestCase
 {
     /**
@@ -163,6 +165,325 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $expected = [
             'link' => ['href' => 'http://example.com/manifest', 'rel' => 'manifest'],
         ];
+        $this->assertHtml($expected, $result);
+    }
+
+    /**
+     * testStyle method
+     */
+    public function testStyle(): void
+    {
+        $result = $this->Html->style(['display' => 'none', 'margin' => '10px']);
+        $this->assertSame('display:none; margin:10px;', $result);
+
+        $result = $this->Html->style(['display' => 'none', 'margin' => '10px'], false);
+        $this->assertSame("display:none;\nmargin:10px;", $result);
+    }
+
+    /**
+     * testScriptWithFullBase method
+     */
+    /*
+    public function testScriptWithFullBase(): void
+    {
+        $here = $this->Html->Url->build('/', ['fullBase' => true]);
+
+        $result = $this->Html->script('foo', ['fullBase' => true]);
+        $expected = [
+            'script' => ['src' => $here . 'js/foo.js'],
+        ];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->script(['foobar', 'bar'], ['fullBase' => true]);
+        $expected = [
+            ['script' => ['src' => $here . 'js/foobar.js']],
+            '/script',
+            ['script' => ['src' => $here . 'js/bar.js']],
+            '/script',
+        ];
+        $this->assertHtml($expected, $result);
+    }*/
+
+    /**
+     * testNestedList method
+     */
+    public function testNestedList(): void
+    {
+        $list = [
+            'Item 1',
+            'Item 2' => [
+                'Item 2.1',
+            ],
+            'Item 3',
+            'Item 4' => [
+                'Item 4.1',
+                'Item 4.2',
+                'Item 4.3' => [
+                    'Item 4.3.1',
+                    'Item 4.3.2',
+                ],
+            ],
+            'Item 5' => [
+                'Item 5.1',
+                'Item 5.2',
+            ],
+        ];
+
+        $result = $this->Html->nestedList($list);
+        $expected = [
+            '<ul',
+            '<li', 'Item 1', '/li',
+            '<li', 'Item 2',
+            '<ul', '<li', 'Item 2.1', '/li', '/ul',
+            '/li',
+            '<li', 'Item 3', '/li',
+            '<li', 'Item 4',
+            '<ul',
+            '<li', 'Item 4.1', '/li',
+            '<li', 'Item 4.2', '/li',
+            '<li', 'Item 4.3',
+            '<ul',
+            '<li', 'Item 4.3.1', '/li',
+            '<li', 'Item 4.3.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+            '/li',
+            '<li', 'Item 5',
+            '<ul',
+            '<li', 'Item 5.1', '/li',
+            '<li', 'Item 5.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+        ];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list);
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list, ['tag' => 'ol']);
+        $expected = [
+            '<ol',
+            '<li', 'Item 1', '/li',
+            '<li', 'Item 2',
+            '<ol', '<li', 'Item 2.1', '/li', '/ol',
+            '/li',
+            '<li', 'Item 3', '/li',
+            '<li', 'Item 4',
+            '<ol',
+            '<li', 'Item 4.1', '/li',
+            '<li', 'Item 4.2', '/li',
+            '<li', 'Item 4.3',
+            '<ol',
+            '<li', 'Item 4.3.1', '/li',
+            '<li', 'Item 4.3.2', '/li',
+            '/ol',
+            '/li',
+            '/ol',
+            '/li',
+            '<li', 'Item 5',
+            '<ol',
+            '<li', 'Item 5.1', '/li',
+            '<li', 'Item 5.2', '/li',
+            '/ol',
+            '/li',
+            '/ol',
+        ];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list, ['tag' => 'ol']);
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list, ['class' => 'list']);
+        $expected = [
+            ['ul' => ['class' => 'list']],
+            '<li', 'Item 1', '/li',
+            '<li', 'Item 2',
+            ['ul' => ['class' => 'list']], '<li', 'Item 2.1', '/li', '/ul',
+            '/li',
+            '<li', 'Item 3', '/li',
+            '<li', 'Item 4',
+            ['ul' => ['class' => 'list']],
+            '<li', 'Item 4.1', '/li',
+            '<li', 'Item 4.2', '/li',
+            '<li', 'Item 4.3',
+            ['ul' => ['class' => 'list']],
+            '<li', 'Item 4.3.1', '/li',
+            '<li', 'Item 4.3.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+            '/li',
+            '<li', 'Item 5',
+            ['ul' => ['class' => 'list']],
+            '<li', 'Item 5.1', '/li',
+            '<li', 'Item 5.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+        ];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list, [], ['class' => 'item']);
+        $expected = [
+            '<ul',
+            ['li' => ['class' => 'item']], 'Item 1', '/li',
+            ['li' => ['class' => 'item']], 'Item 2',
+            '<ul', ['li' => ['class' => 'item']], 'Item 2.1', '/li', '/ul',
+            '/li',
+            ['li' => ['class' => 'item']], 'Item 3', '/li',
+            ['li' => ['class' => 'item']], 'Item 4',
+            '<ul',
+            ['li' => ['class' => 'item']], 'Item 4.1', '/li',
+            ['li' => ['class' => 'item']], 'Item 4.2', '/li',
+            ['li' => ['class' => 'item']], 'Item 4.3',
+            '<ul',
+            ['li' => ['class' => 'item']], 'Item 4.3.1', '/li',
+            ['li' => ['class' => 'item']], 'Item 4.3.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+            '/li',
+            ['li' => ['class' => 'item']], 'Item 5',
+            '<ul',
+            ['li' => ['class' => 'item']], 'Item 5.1', '/li',
+            ['li' => ['class' => 'item']], 'Item 5.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+        ];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list, [], ['even' => 'even', 'odd' => 'odd']);
+        $expected = [
+            '<ul',
+            ['li' => ['class' => 'odd']], 'Item 1', '/li',
+            ['li' => ['class' => 'even']], 'Item 2',
+            '<ul', ['li' => ['class' => 'odd']], 'Item 2.1', '/li', '/ul',
+            '/li',
+            ['li' => ['class' => 'odd']], 'Item 3', '/li',
+            ['li' => ['class' => 'even']], 'Item 4',
+            '<ul',
+            ['li' => ['class' => 'odd']], 'Item 4.1', '/li',
+            ['li' => ['class' => 'even']], 'Item 4.2', '/li',
+            ['li' => ['class' => 'odd']], 'Item 4.3',
+            '<ul',
+            ['li' => ['class' => 'odd']], 'Item 4.3.1', '/li',
+            ['li' => ['class' => 'even']], 'Item 4.3.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+            '/li',
+            ['li' => ['class' => 'odd']], 'Item 5',
+            '<ul',
+            ['li' => ['class' => 'odd']], 'Item 5.1', '/li',
+            ['li' => ['class' => 'even']], 'Item 5.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+        ];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->nestedList($list, ['class' => 'list'], ['class' => 'item']);
+        $expected = [
+            ['ul' => ['class' => 'list']],
+            ['li' => ['class' => 'item']], 'Item 1', '/li',
+            ['li' => ['class' => 'item']], 'Item 2',
+            ['ul' => ['class' => 'list']], ['li' => ['class' => 'item']], 'Item 2.1', '/li', '/ul',
+            '/li',
+            ['li' => ['class' => 'item']], 'Item 3', '/li',
+            ['li' => ['class' => 'item']], 'Item 4',
+            ['ul' => ['class' => 'list']],
+            ['li' => ['class' => 'item']], 'Item 4.1', '/li',
+            ['li' => ['class' => 'item']], 'Item 4.2', '/li',
+            ['li' => ['class' => 'item']], 'Item 4.3',
+            ['ul' => ['class' => 'list']],
+            ['li' => ['class' => 'item']], 'Item 4.3.1', '/li',
+            ['li' => ['class' => 'item']], 'Item 4.3.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+            '/li',
+            ['li' => ['class' => 'item']], 'Item 5',
+            ['ul' => ['class' => 'list']],
+            ['li' => ['class' => 'item']], 'Item 5.1', '/li',
+            ['li' => ['class' => 'item']], 'Item 5.2', '/li',
+            '/ul',
+            '/li',
+            '/ul',
+        ];
+        $this->assertHtml($expected, $result);
+    }
+
+    /**
+     * testTag method
+     */
+    public function testTag(): void
+    {
+        $result = $this->Html->tag('div', 'text');
+        $this->assertHtml(['<div', 'text', '/div'], $result);
+
+        $result = $this->Html->tag('div', '<text>', ['class' => 'class-name', 'escape' => true]);
+        $expected = ['div' => ['class' => 'class-name'], '&lt;text&gt;', '/div'];
+        $this->assertHtml($expected, $result);
+    }
+
+    /**
+     * testDiv method
+     */
+    public function testDiv(): void
+    {
+        $result = $this->Html->div('class-name');
+        $expected = ['div' => ['class' => 'class-name']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->div('class-name', 'text');
+        $expected = ['div' => ['class' => 'class-name'], 'text', '/div'];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->div('class-name', '<text>', ['escape' => true]);
+        $expected = ['div' => ['class' => 'class-name'], '&lt;text&gt;', '/div'];
+        $this->assertHtml($expected, $result);
+
+        $evilKey = '><script>alert(1)</script>';
+        $options = [$evilKey => 'some value'];
+        $result = $this->Html->div('class-name', '', $options);
+        $expected = '<div &gt;&lt;script&gt;alert(1)&lt;/script&gt;="some value" class="class-name"></div>';
+        $this->assertSame($expected, $result);
+    }
+
+    /**
+     * testPara method
+     */
+    public function testPara(): void
+    {
+        $result = $this->Html->para('class-name', null);
+        $expected = ['p' => ['class' => 'class-name']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->para('class-name', '');
+        $expected = ['p' => ['class' => 'class-name'], '/p'];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->para('class-name', 'text');
+        $expected = ['p' => ['class' => 'class-name'], 'text', '/p'];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->para('class-name', '<text>', ['escape' => true]);
+        $expected = ['p' => ['class' => 'class-name'], '&lt;text&gt;', '/p'];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->para('class-name', 'text"', ['escape' => false]);
+        $expected = ['p' => ['class' => 'class-name'], 'text"', '/p'];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->para(null, null);
+        $expected = ['p' => []];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->para(null, 'text');
+        $expected = ['p' => [], 'text', '/p'];
         $this->assertHtml($expected, $result);
     }
 }

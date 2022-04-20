@@ -588,6 +588,8 @@ final class HtmlHelper extends Helper
      * @param array<string, mixed> $options Additional HTML attributes of the DIV tag, see above.
      * @return string The formatted tag element
      */
+    //The tag builder respects HTML5 void elements (https://www.w3.org/TR/html5/syntax.html#void-elements) if no content is passed, and omits closing tags for those elements.
+    // https://api.rubyonrails.org/v5.2.0/classes/ActionView/Helpers/TagHelper.html
     public function tag(string $name, ?string $text = null, array $options = []): string
     {
         if (isset($options['escape']) && $options['escape']) {

@@ -30,7 +30,7 @@ final class StringTemplate
      *
      * @var array<string, mixed>
      */
-    protected $_config = [];
+    protected $_config = []; // TODO : vérifier l'utilité de cette variable !!!!
 
     /**
      * List of attributes that can be made compact.
@@ -139,7 +139,7 @@ final class StringTemplate
         }
         foreach ($templates as $name) {
             //$template = $this->getConfig($name);
-            $template = $this->_config[$name] ?? null;
+            $template = $this->_config[$name] ?? null; // TODO : je pense pas que ce cas peut arriver !!!!
             if ($template === null) {
                 $this->_compiled[$name] = [null, null];
             }
@@ -161,6 +161,7 @@ final class StringTemplate
      * @return string Formatted string
      * @throws \RuntimeException If template not found.
      */
+    // TODO : renommer en formatTemplate()
     public function format(string $name, array $data): string
     {
         if (!isset($this->_compiled[$name])) {
