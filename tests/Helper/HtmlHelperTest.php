@@ -554,4 +554,65 @@ class HtmlHelperTest extends AbstractHelperTestCase
         ];
         $this->assertHtml($expected, $result);
     }
+
+
+
+    /**
+     * testImageTag method
+     */
+    public function testImageTag(): void
+    {
+        //$builder = Router::createRouteBuilder('/');
+        //$builder->connect('/:controller', ['action' => 'index']);
+        //$builder->connect('/:controller/:action/*');
+
+/*
+        $result = $this->Html->image('test.gif');
+        $expected = ['img' => ['src' => 'img/test.gif', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+*/
+        $result = $this->Html->image('http://google.com/logo.gif');
+        $expected = ['img' => ['src' => 'http://google.com/logo.gif', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->image('//google.com/logo.gif');
+        $expected = ['img' => ['src' => '//google.com/logo.gif', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+/*
+        $result = $this->Html->image(['controller' => 'Test', 'action' => 'view', 1, '_ext' => 'gif']);
+        $expected = ['img' => ['src' => '/test/view/1.gif', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+*/
+
+        $result = $this->Html->image('/test/view/1.gif');
+        $expected = ['img' => ['src' => '/test/view/1.gif', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->image('cid:cakephp_logo');
+        $expected = ['img' => ['src' => 'cid:cakephp_logo', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+/*
+        $result = $this->Html->image('x:"><script>alert(1)</script>');
+        $expected = ['img' => ['src' => 'x:&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->image('//google.com/"><script>alert(1)</script>');
+        $expected = ['img' => ['src' => '//google.com/&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->image([
+            'controller' => 'Images',
+            'action' => 'display',
+            'test',
+            '?' => ['one' => 'two', 'three' => 'four'],
+        ]);
+        $expected = ['img' => ['src' => '/images/display/test?one=two&amp;three=four', 'alt' => '']];
+        $this->assertHtml($expected, $result);
+*/
+
+    }
+
+
 }
