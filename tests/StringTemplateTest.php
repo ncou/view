@@ -122,6 +122,13 @@ class StringTemplateTest extends TestCase
     {
         $template = new StringTemplate();
 
+        $attrs = ['batman'];
+        $result = $template->formatAttributes($attrs);
+        $this->assertSame(
+            ' batman="batman"',
+            $result
+        );
+
         $attrs = ['name' => 'bruce', 'data-hero' => '<batman>', 'spellcheck' => 'true'];
         $result = $template->formatAttributes($attrs);
         $this->assertSame(
