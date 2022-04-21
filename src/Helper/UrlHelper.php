@@ -113,7 +113,7 @@ final class UrlHelper
 
         // Check again if path has protocol as `pathPrefix` could be for CDNs.
         if (preg_match('|^([a-z0-9]+:)?//|', $path)) {
-            return Router::url($path);
+            return $this->routerUrl($path);
         }
 
         if (isset($plugin)) {
@@ -212,7 +212,8 @@ final class UrlHelper
      * @return string Full translated URL with base path.
      * @throws \Cake\Core\Exception\CakeException When the route name is not found
      */
-    // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!! https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
+    // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!!
+    //https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
     private function routerUrl($url = null, bool $full = false): string
     {
 
