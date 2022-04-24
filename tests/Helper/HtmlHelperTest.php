@@ -611,7 +611,49 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $expected = ['img' => ['src' => '/images/display/test?one=two&amp;three=four', 'alt' => '']];
         $this->assertHtml($expected, $result);
 */
+    }
 
+    /**
+     * testCharsetTag method
+     */
+    public function testCharsetTag(): void
+    {
+        // TODO : code temporaire améliorer le changement de la configuration !!!
+        $container = new \Chiron\Container\Container();
+
+        $loader = new \Chiron\Config\Loader\ArrayLoader([
+            'html' => [
+                'default_charset' => null
+            ]
+        ]);
+        $configure = new \Chiron\Config\Configure($loader);
+        $container->singleton(\Chiron\Config\Configure::class, $configure);
+
+
+        //Configure::write('App.encoding', null);
+        $result = $this->Html->charset();
+        $expected = ['meta' => ['charset' => 'utf-8']];
+        $this->assertHtml($expected, $result);
+
+        // TODO : code temporaire améliorer le changement de la configuration !!!
+        $container = new \Chiron\Container\Container();
+
+        $loader = new \Chiron\Config\Loader\ArrayLoader([
+            'html' => [
+                'default_charset' => 'ISO-8859-1'
+            ]
+        ]);
+        $configure = new \Chiron\Config\Configure($loader);
+        $container->singleton(\Chiron\Config\Configure::class, $configure);
+
+        //Configure::write('App.encoding', 'ISO-8859-1');
+        $result = $this->Html->charset();
+        $expected = ['meta' => ['charset' => 'iso-8859-1']];
+        $this->assertHtml($expected, $result);
+
+        $result = $this->Html->charset('UTF-7');
+        $expected = ['meta' => ['charset' => 'UTF-7']];
+        $this->assertHtml($expected, $result);
     }
 
 

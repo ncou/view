@@ -47,7 +47,6 @@ use Throwable;
  * @property \Cake\View\Helper\UrlHelper $Url
  * @property \Cake\View\ViewBlock $Blocks
  */
-// TODO : renommer en viewState ????
 final class ViewContext
 {
     private array $blocks;

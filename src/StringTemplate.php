@@ -26,18 +26,11 @@ use RuntimeException;
 final class StringTemplate
 {
     /**
-     * Runtime config
-     *
-     * @var array<string, mixed>
-     */
-    protected $_config = []; // TODO : vérifier l'utilité de cette variable !!!!
-
-    /**
      * List of attributes that can be made compact.
      *
      * @var array<string, bool>
      */
-    protected $_compactAttributes = [
+    protected $compactAttributes = [
         'allowfullscreen' => true,
         'async' => true,
         'autofocus' => true,
@@ -86,18 +79,7 @@ final class StringTemplate
      *
      * @var array<string, array>
      */
-    protected $_compiled = [];
-
-    /**
-     * Constructor.
-     *
-     * @param array<string, mixed> $config A set of templates to add.
-     */
-    // TODO : renommer le paramétre en $templates !!!!
-    public function __construct(array $config = [])
-    {
-        $this->add($config);
-    }
+    protected $compiled = [];
 
     /**
      * Registers a list of templates by name
@@ -105,48 +87,31 @@ final class StringTemplate
      * ### Example:
      *
      * ```
-     * $templater->add([
-     *   'link' => '<a href="{{url}}">{{title}}</a>'
-     *   'button' => '<button>{{text}}</button>'
+     * $templates = ([
+     *   'link'   => '<a href="{{url}}">{{title}}</a>'
+     *   'button' => '<button>{{text}}</button>',
+     *   'meta'   => '<meta{{attrs}}/>',
      * ]);
      * ```
      *
-     * @param array<string> $templates An associative list of named templates.
-     * @return $this
+     * @param array<string, string> $templates An associative list of named templates.
      */
-    // TODO : passer la méthode en private et le return type en void
-    // TODO : eventuellement virer cette méthode et passer les 2 lignes de code dans le constructeur
-    public function add(array $templates)
+    public function __construct(array $templates = [])
     {
-        //$this->setConfig($templates);
-        $this->_config = $templates;
-        $this->_compileTemplates(array_keys($templates));
-
-        return $this;
+        $this->compileTemplates($templates);
     }
 
     /**
      * Compile templates into a more efficient printf() compatible format.
      *
      * @param array<string> $templates The template names to compile. If empty all templates will be compiled.
-     * @return void
      */
-    protected function _compileTemplates(array $templates = []): void
+    protected function compileTemplates(array $templates): void
     {
-        // TODO : virer l'initialisation du paramétre $templates par défaut à [], ce qui permettra de virer le if(empty) ci dessous !!!
-        if (empty($templates)) {
-            $templates = array_keys($this->_config);
-        }
-        foreach ($templates as $name) {
-            //$template = $this->getConfig($name);
-            $template = $this->_config[$name] ?? null; // TODO : je pense pas que ce cas peut arriver !!!!
-            if ($template === null) {
-                $this->_compiled[$name] = [null, null];
-            }
-
+        foreach ($templates as $name => $template) {
             $template = str_replace('%', '%%', $template);
             preg_match_all('#\{\{([\w\._]+)\}\}#', $template, $matches);
-            $this->_compiled[$name] = [
+            $this->compiled[$name] = [
                 str_replace($matches[0], '%s', $template),
                 $matches[1],
             ];
@@ -158,17 +123,19 @@ final class StringTemplate
      *
      * @param string $name The template name.
      * @param array<string, mixed> $data The data to insert.
+     *
      * @return string Formatted string
+     *
      * @throws \RuntimeException If template not found.
      */
     // TODO : renommer en formatTemplate()
     public function format(string $name, array $data): string
     {
-        if (!isset($this->_compiled[$name])) {
+        if (!isset($this->compiled[$name])) {
             throw new RuntimeException("Cannot find template named '$name'.");
         }
 
-        [$template, $placeholders] = $this->_compiled[$name];
+        [$template, $placeholders] = $this->compiled[$name];
 
         if (isset($data['templateVars'])) {
             $data += $data['templateVars'];
@@ -211,8 +178,10 @@ final class StringTemplate
      *
      * @param array<string, mixed>|null $options Array of options.
      * @param array<string>|null $exclude Array of options to be excluded, the options here will not be part of the return.
+     *
      * @return string Composed attributes.
      */
+    // TODO : vérifier pourquoi on peut passer null pour les options ???? il faudrait virer le paramétre $exclude qui ne sert pas souvent !!! et il faudrait ajouter un paramétre $escape = true par défault
     public function formatAttributes(?array $options, ?array $exclude = null): string
     {
         $insertBefore = ' ';
@@ -222,6 +191,7 @@ final class StringTemplate
             $exclude = [];
         }
 
+        // TODO : cette liste d'esclude ne sert pas à grand chose !!!!
         $exclude = ['escape' => true, 'idPrefix' => true, 'templateVars' => true, 'fieldName' => true]
             + array_flip($exclude);
         $escape = $options['escape'];
@@ -229,7 +199,7 @@ final class StringTemplate
 
         foreach ($options as $key => $value) {
             if (!isset($exclude[$key]) && $value !== false && $value !== null) {
-                $attributes[] = $this->_formatAttribute((string)$key, $value, $escape);
+                $attributes[] = $this->formatAttribute((string)$key, $value, $escape);
             }
         }
         $out = trim(implode(' ', $attributes));
@@ -242,11 +212,12 @@ final class StringTemplate
      * Works with minimized attributes that have the same value as their name such as 'disabled' and 'checked'
      *
      * @param string $key The name of the attribute to create
-     * @param array<string>|string $value The value of the attribute to create.
+     * @param mixed $value The value of the attribute to create.
      * @param bool $escape Define if the value must be escaped
+     *
      * @return string The composed attribute.
      */
-    protected function _formatAttribute(string $key, $value, $escape = true): string
+    protected function formatAttribute(string $key, mixed $value, bool $escape = true): string
     {
         if (is_array($value)) {
             $value = implode(' ', $value);
@@ -255,7 +226,7 @@ final class StringTemplate
             return "$value=\"$value\"";
         }
         $truthy = [1, '1', true, 'true', $key];
-        $isMinimized = isset($this->_compactAttributes[$key]);
+        $isMinimized = isset($this->compactAttributes[$key]);
         if (!preg_match('/\A(\w|[.-])+\z/', $key)) {
             $key = e($key);
         }

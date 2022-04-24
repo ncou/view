@@ -18,6 +18,7 @@ final class ViewConfig extends AbstractInjectableConfig
         return Expect::structure([
             'extension' => Expect::string()->nullable(),
             'paths' => Expect::arrayOf('string')->default([directory('@views')]),
+            'dependencies' => Expect::arrayOf('string'), // TODO : améliorer le expect ca doit être un tableau de array<string, string> c'est à dire un tableau associatif de string
         ]);
     }
 
@@ -29,5 +30,10 @@ final class ViewConfig extends AbstractInjectableConfig
     public function getPaths(): array
     {
         return $this->get('paths');
+    }
+
+    public function getDependencies(): array
+    {
+        return $this->get('dependencies');
     }
 }

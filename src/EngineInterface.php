@@ -46,6 +46,7 @@ interface EngineInterface
      * @throws LoaderException
      */
     //public function get(string $path, ContextInterface $context): ViewInterface;
-    public function get(string $path): ViewInterface;
+    // TODO : mettre à jour la phpdoc
+    public function getView(string $path, array $parameters = []): ViewInterface;
 }
 

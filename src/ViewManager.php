@@ -9,6 +9,7 @@ use Chiron\View\Native\NativeEngine;
 use Chiron\View\EngineInterface;
 use Chiron\View\Config\ViewConfig;
 use Chiron\Container\SingletonInterface;
+use Chiron\Container\Container;
 
 //https://github.com/spiral/views/blob/5d2123adc3cca2dc3e3c4ca0b9fe77d5ab2bf660/src/ViewManager.php
 
@@ -18,12 +19,13 @@ class ViewManager implements SingletonInterface
 {
     /** @var ViewLoader */
     private ViewLoader $loader;
-
     /** @var EngineInterface[] */
     private array $engines = [];
+    /** @var array<string, object> */
+    private array $dependencies = []; // TODO : attention il est possible que dans le fichier de config on ait autre chose qu'un object par exemple "$dependencies['csrf' => true]" et ca doit pouvoir fonctionner !!!!
 
     // TODO : ajouter une méthode pour ajouter un namespace+path associé
-    public function __construct(ViewConfig $config)
+    public function __construct(ViewConfig $config, Container $container)
     {
 
 /*
@@ -37,6 +39,15 @@ class ViewManager implements SingletonInterface
             }
         }
 */
+
+        // TODO : prévoir une méthode setDependencies() ??? ou addDependency($name, $object) ????
+        // add view dependencies
+        foreach ($config->getDependencies() as $name => $dependency) {
+            $this->dependencies[$name] = $container->get($dependency);
+            // TODO : renplacer ce bout de code par Reference::to(XXXX) dans le fichier de config et on fait un $dependency->resolve($container) directement dans la classe de Config quand on appel le getDependencies, sinon dans cette boucle ici.
+            // TODO : attention il est possible que dans le fichier de config on ait autre chose qu'un object par exemple "$dependencies['csrf' => true]" et ca doit pouvoir fonctionner !!!!
+        }
+
 
         $namespaces = ['default' => [directory('@views')]]; // TODO : aller chercher ces informations dans le fichier de config !!!
         $namespaces = [directory('@views')]; // TODO : aller chercher ces informations dans le fichier de config !!!
@@ -72,15 +83,13 @@ class ViewManager implements SingletonInterface
         return $this->engines;
     }
 
-
-
-
     /**
      * @throws ViewException
      */
-    public function render(string $path, array $data = []): string
+    // TODO : utilité de cette fonction ???
+    public function render(string $template, array $parameters = []): string
     {
-        return $this->get($path)->render($data);
+        return $this->get($template, $parameters)->render();
     }
 
     /**
@@ -89,26 +98,35 @@ class ViewManager implements SingletonInterface
      * @throws ViewException
      */
     // TODO : il faudrait initialiser le assign('title') ici et ensuite retourner la view !!!!
-    public function get(string $path): ViewInterface
+    // TODO : renommer en getView() ???
+    public function get(string $template): ViewInterface
     {
-        // TODO : utilser un cache ????
+        // TODO : utiliser un cache ????
         // TODO : lui passer le context !!!!
         //return $this->findEngine($path)->get($path, $this->context);
-        return $this->findEngine($path)->get($path);
+        //return $this->findEngine($template)->getView($template, $this->dependencies);
+
+        $view = $this->findEngine($template)->getView($template, $this->dependencies);
+        // Assign by default a title for the template.
+        $view->assign('title', $template); //TODO : faire un Str::Humanize() ou Str::title() sur le titre. ou alors utiliser une classe inflector !!!!
+        //https://github.com/cakephp/cakephp/blob/5.x/src/View/View.php#L829
+        //https://github.com/cakephp/cakephp/blob/876a11e172b0b33710b1fbddd94de6d1618d352b/src/Utility/Inflector.php#L427
+
+        return $view;
     }
 
     /**
      * @throws ViewException
      */
-    private function findEngine(string $path): EngineInterface
+    private function findEngine(string $template): EngineInterface
     {
         foreach ($this->engines as $engine) {
-            if ($engine->getLoader()->exists($path)) {
+            if ($engine->getLoader()->exists($template)) {
                 return $engine;
             }
         }
 
-        throw new ViewException("Unable to detect view engine for `{$path}`."); // TODO : utiliser un sprintf
+        throw new ViewException("Unable to detect view engine for `{$template}`."); // TODO : utiliser un sprintf
     }
 
 }

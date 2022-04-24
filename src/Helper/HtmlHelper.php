@@ -953,9 +953,9 @@ final class HtmlHelper extends Helper
      */
     public function charset(?string $charset = null): string
     {
-        //TODO : code à corriger en utilisant les settings de l'application !!!!
+        // TODO : faire un test en passant une chaine vide !!!! car il faut aussi gérer ce cas !!!
         if (empty($charset)) {
-            $charset = 'utf-8';//strtolower((string)Configure::read('App.encoding'));
+            $charset = strtolower((string)config('html')->get('default_charset'));
         }
 
         return $this->templater()->format('charset', [
