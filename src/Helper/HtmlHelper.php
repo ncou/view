@@ -236,6 +236,8 @@ final class HtmlHelper extends Helper
             $title = htmlentities($title, ENT_QUOTES, $escapeTitle);
         }
 
+        // TODO : virer la notion de confirm !!!
+
         $templater = $this->templater();
         $confirmMessage = null;
         if (isset($options['confirm'])) {
@@ -548,98 +550,6 @@ final class HtmlHelper extends Helper
         return $image;
     }
 
-
-
-
-
-
-    /**
-     * Returns a formatted DIV tag for HTML FORMs.
-     *
-     * ### Options
-     *
-     * - `escape` Whether the contents should be html_entity escaped.
-     *
-     * @param string|null $class CSS class name of the div element.
-     * @param string|null $text String content that will appear inside the div element.
-     *   If null, only a start tag will be printed
-     * @param array<string, mixed> $options Additional HTML attributes of the DIV tag
-     * @return string The formatted DIV element
-     */
-    public function div(?string $class = null, ?string $text = null, array $options = []): string
-    {
-        if (!empty($class)) {
-            $options['class'] = $class;
-        }
-
-        return $this->tag('div', $text, $options);
-    }
-
-    /**
-     * Returns a formatted block tag, i.e DIV, SPAN, P.
-     *
-     * ### Options
-     *
-     * - `escape` Whether the contents should be html_entity escaped.
-     *
-     * @param string $name Tag name.
-     * @param string|null $text String content that will appear inside the div element.
-     *   If null, only a start tag will be printed
-     * @param array<string, mixed> $options Additional HTML attributes of the DIV tag, see above.
-     * @return string The formatted tag element
-     */
-    //The tag builder respects HTML5 void elements (https://www.w3.org/TR/html5/syntax.html#void-elements) if no content is passed, and omits closing tags for those elements.
-    // https://api.rubyonrails.org/v5.2.0/classes/ActionView/Helpers/TagHelper.html
-    public function tag(string $name, ?string $text = null, array $options = []): string
-    {
-        if (isset($options['escape']) && $options['escape']) {
-            $text = e($text);
-            unset($options['escape']);
-        }
-        if ($text === null) {
-            $tag = 'tagstart';
-        } else {
-            $tag = 'tag';
-        }
-
-        return $this->templater()->format($tag, [
-            'attrs' => $this->templater()->formatAttributes($options),
-            'tag' => $name,
-            'content' => $text,
-        ]);
-    }
-
-    /**
-     * Returns a formatted P tag.
-     *
-     * ### Options
-     *
-     * - `escape` Whether the contents should be html_entity escaped.
-     *
-     * @param string|null $class CSS class name of the p element.
-     * @param string|null $text String content that will appear inside the p element.
-     * @param array<string, mixed> $options Additional HTML attributes of the P tag
-     * @return string The formatted P element
-     */
-    public function para(?string $class, ?string $text, array $options = []): string
-    {
-        if (!empty($options['escape'])) {
-            $text = e($text);
-        }
-        if ($class) {
-            $options['class'] = $class;
-        }
-        $tag = 'para';
-        if ($text === null) {
-            $tag = 'parastart';
-        }
-
-        return $this->templater()->format($tag, [
-            'attrs' => $this->templater()->formatAttributes($options),
-            'content' => $text,
-        ]);
-    }
-
     /**
      * Returns an audio/video element
      *
@@ -813,6 +723,94 @@ final class HtmlHelper extends Helper
         //return $mimeTypes[strtolower($alias)] ?? [];
     }
 
+     /**
+     * Returns a formatted DIV tag for HTML FORMs.
+     *
+     * ### Options
+     *
+     * - `escape` Whether the contents should be html_entity escaped.
+     *
+     * @param string|null $class CSS class name of the div element.
+     * @param string|null $text String content that will appear inside the div element.
+     *   If null, only a start tag will be printed
+     * @param array<string, mixed> $options Additional HTML attributes of the DIV tag
+     * @return string The formatted DIV element
+     */
+    public function div(?string $class = null, ?string $text = null, array $options = []): string
+    {
+        if (!empty($class)) {
+            $options['class'] = $class;
+        }
+
+        return $this->tag('div', $text, $options);
+    }
+
+    /**
+     * Returns a formatted block tag, i.e DIV, SPAN, P.
+     *
+     * ### Options
+     *
+     * - `escape` Whether the contents should be html_entity escaped.
+     *
+     * @param string $name Tag name.
+     * @param string|null $text String content that will appear inside the div element.
+     *   If null, only a start tag will be printed
+     * @param array<string, mixed> $options Additional HTML attributes of the DIV tag, see above.
+     * @return string The formatted tag element
+     */
+    //The tag builder respects HTML5 void elements (https://www.w3.org/TR/html5/syntax.html#void-elements) if no content is passed, and omits closing tags for those elements.
+    // https://api.rubyonrails.org/v5.2.0/classes/ActionView/Helpers/TagHelper.html
+    public function tag(string $name, ?string $text = null, array $options = []): string
+    {
+        if (isset($options['escape']) && $options['escape']) {
+            $text = e($text);
+            unset($options['escape']);
+        }
+        if ($text === null) {
+            $tag = 'tagstart';
+        } else {
+            $tag = 'tag';
+        }
+
+        return $this->templater()->format($tag, [
+            'attrs' => $this->templater()->formatAttributes($options),
+            'tag' => $name,
+            'content' => $text,
+        ]);
+    }
+
+    /**
+     * Returns a formatted P tag.
+     *
+     * ### Options
+     *
+     * - `escape` Whether the contents should be html_entity escaped.
+     *
+     * @param string|null $class CSS class name of the p element.
+     * @param string|null $text String content that will appear inside the p element.
+     * @param array<string, mixed> $options Additional HTML attributes of the P tag
+     * @return string The formatted P element
+     */
+    // TODO : renommer la méthode en paragraph() ???
+    public function para(?string $class, ?string $text, array $options = []): string
+    {
+        if (!empty($options['escape'])) {
+            $text = e($text);
+        }
+        if ($class) {
+            $options['class'] = $class;
+        }
+        $tag = 'para';
+        if ($text === null) {
+            $tag = 'parastart';
+        }
+
+        return $this->templater()->format($tag, [
+            'attrs' => $this->templater()->formatAttributes($options),
+            'content' => $text,
+        ]);
+    }
+
     /**
      * Build a nested list (UL/OL) out of an associative array.
      *
@@ -953,9 +951,9 @@ final class HtmlHelper extends Helper
      */
     public function charset(?string $charset = null): string
     {
-        // TODO : faire un test en passant une chaine vide !!!! car il faut aussi gérer ce cas !!!
+        // TODO : faire un test en passant une chaine vide !!!! car il faut aussi gérer ce cas !!! et virer les 2 utilisation en empty() !!!
         if (empty($charset)) {
-            $charset = strtolower((string)config('html')->get('default_charset'));
+            $charset = strtolower((string)config('http')->get('default_charset'));
         }
 
         return $this->templater()->format('charset', [
