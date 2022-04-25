@@ -167,7 +167,7 @@ abstract class AbstractHelperTestCase extends TestCase
         foreach ($regex as $i => $assertion) {
             $matches = false;
             if (isset($assertion['attrs'])) {
-                $string = $this->_assertAttributes($assertion, $string, $fullDebug, $regex);
+                $string = $this->assertAttributes($assertion, $string, $fullDebug, $regex);
                 if ($fullDebug === true && $string === false) {
                     debug($string, true);
                     debug($regex, true);
@@ -216,7 +216,7 @@ abstract class AbstractHelperTestCase extends TestCase
      * @param array|string $regex Full regexp from `assertHtml`
      * @return string|false
      */
-    protected function _assertAttributes(array $assertions, string $string, bool $fullDebug = false, $regex = '')
+    protected function assertAttributes(array $assertions, string $string, bool $fullDebug = false, $regex = '')
     {
         $asserts = $assertions['attrs'];
         $explains = $assertions['explains'];
