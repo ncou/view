@@ -9,6 +9,8 @@ use Chiron\View\TemplateRendererInterface;
 use Psr\Http\Message\ResponseInterface;
 use Chiron\View\StringTemplate;
 
+// TODO : créer un helper dédié aux tableaux !!!! https://github.com/JelmerD/TableHelper/blob/master/src/View/Helper/TableHelper.php
+
 // TODO : passer les protected en private car la classe est final !!!!
 final class HtmlHelper extends Helper
 {
@@ -29,7 +31,7 @@ final class HtmlHelper extends Helper
     /**
      * Default config for this class
      *
-     * @var array<string, mixed>
+     * @var array<string, string>
      */
     protected $_defaultConfig = [
         'templates' => [
@@ -38,10 +40,10 @@ final class HtmlHelper extends Helper
             'link' => '<a href="{{url}}"{{attrs}}>{{content}}</a>',
             'mailto' => '<a href="mailto:{{url}}"{{attrs}}>{{content}}</a>',
             'image' => '<img src="{{url}}"{{attrs}}/>',
-            'tableheader' => '<th{{attrs}}>{{content}}</th>',
-            'tableheaderrow' => '<tr{{attrs}}>{{content}}</tr>',
-            'tablecell' => '<td{{attrs}}>{{content}}</td>',
-            'tablerow' => '<tr{{attrs}}>{{content}}</tr>',
+            'tableheader' => '<th{{attrs}}>{{content}}</th>', // TODO : à virer !!!
+            'tableheaderrow' => '<tr{{attrs}}>{{content}}</tr>', // TODO : à virer !!!
+            'tablecell' => '<td{{attrs}}>{{content}}</td>', // TODO : à virer !!!
+            'tablerow' => '<tr{{attrs}}>{{content}}</tr>', // TODO : à virer !!!
             'block' => '<div{{attrs}}>{{content}}</div>',
             'blockstart' => '<div{{attrs}}>',
             'blockend' => '</div>',
@@ -61,7 +63,7 @@ final class HtmlHelper extends Helper
             'javascriptstart' => '<script>',
             'javascriptlink' => '<script src="{{url}}"{{attrs}}></script>',
             'javascriptend' => '</script>',
-            'confirmJs' => '{{confirm}}',
+            'confirmJs' => '{{confirm}}', // TODO : à virer !!!!
         ],
     ];
 
@@ -150,6 +152,7 @@ final class HtmlHelper extends Helper
 
         if (isset($options['link'])) {
 
+            // TODO : virer le cas du array pour le link car on va pas gérer ce cas là !!!
             if (is_array($options['link'])) {
                 $options['link'] = $this->Url->build($options['link']);
             } else {
@@ -210,13 +213,15 @@ final class HtmlHelper extends Helper
     public function link($title, $url = null, array $options = []): string
     {
         $escapeTitle = true;
+
+        // TODO : attention il faut forcer le paramétre $url à être une string et pas un tableau !!!!
         if ($url !== null) {
             // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!! https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
             $url = $this->Url->build($url, $options);
             unset($options['fullBase']);
         } else {
             // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!! https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
-            $url = $this->Url->build($title);
+            $url = $this->Url->build($title); // TODO : attention il faut forcer le paramétre $title à être une string et pas un tableau !!!!
             $title = htmlspecialchars_decode($url, ENT_QUOTES);
             $title = e(urldecode($title));
             $escapeTitle = false;
@@ -237,7 +242,7 @@ final class HtmlHelper extends Helper
         }
 
         // TODO : virer la notion de confirm !!!
-
+/*
         $templater = $this->templater();
         $confirmMessage = null;
         if (isset($options['confirm'])) {
@@ -252,39 +257,14 @@ final class HtmlHelper extends Helper
                 'confirm' => $confirm,
             ]);
         }
+*/
 
-        return $templater->format('link', [
+        return $this->templater()->format('link', [
             'url' => $url,
             'attrs' => $templater->formatAttributes($options),
             'content' => $title,
         ]);
     }
-
-
-    /**
-     * Creates an HTML link from route path string.
-     *
-     * ### Options
-     *
-     * - `escape` Set to false to disable escaping of title and attributes.
-     * - `escapeTitle` Set to false to disable escaping of title. Takes precedence
-     *   over value of `escape`)
-     * - `confirm` JavaScript confirmation message.
-     *
-     * @param string $title The content to be wrapped by `<a>` tags.
-     * @param string $path Cake-relative route path.
-     * @param array $params An array specifying any additional parameters.
-     *   Can be also any special parameters supported by `Router::url()`.
-     * @param array<string, mixed> $options Array of options and HTML attributes.
-     * @return string An `<a />` element.
-     * @see \Cake\Routing\Router::pathUrl()
-     * @link https://book.cakephp.org/4/en/views/helpers/html.html#creating-links
-     */
-    /*
-    public function linkFromPath(string $title, string $path, array $params = [], array $options = []): string
-    {
-        return $this->link($title, ['_path' => $path] + $params, $options);
-    }*/
 
 
     /**
@@ -516,6 +496,7 @@ final class HtmlHelper extends Helper
      */
     public function image($path, array $options = []): string
     {
+        // TODO : virer le cas ou on passe un tableau pour le path !!!!
         if (is_string($path)) {
             $path = $this->Url->assetUrl($path, $options);
         } else {

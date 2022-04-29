@@ -8,6 +8,9 @@ use Chiron\ResponseCreator\ResponseCreator;
 use Chiron\View\TemplateRendererInterface;
 use Psr\Http\Message\ResponseInterface;
 
+// TODO : créer un helper dédié aux tableaux !!!! https://github.com/JelmerD/TableHelper/blob/master/src/View/Helper/TableHelper.php
+
+//https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/tests/TestCase/Routing/AssetTest.php
 //https://book.cakephp.org/4/en/views/helpers/url.html#Cake\View\Helper\UrlHelper::build
 
 // TODO : passer les protected en private car la classe est final !!!!
@@ -30,7 +33,10 @@ final class UrlHelper
      * @return string Full translated URL with base path.
      */
     // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!! https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
-    public function build($url = null, array $options = []): string
+
+    // TODO : Virer la possibilité de passer un tableau pour le paramétre $url !!!!
+    // TODO : pourquoi on peut passer null comme valeur au paramétre $url ????
+    public function build(string $url, array $options = []): string
     {
         $defaults = [
             'fullBase' => false,
@@ -38,8 +44,7 @@ final class UrlHelper
         ];
         $options += $defaults;
 
-        //$url = Router::url($url, $options['fullBase']);
-        $url = $this->routerUrl($url, $options['fullBase']);
+        $url = $this->buildUrl($url, $options['fullBase']);
         if ($options['escape']) {
             /** @var string $url */
             $url = e($url);
@@ -47,6 +52,158 @@ final class UrlHelper
 
         return $url;
     }
+
+    /**
+     * Finds URL for specified action.
+     *
+     * Returns a URL pointing to a combination of controller and action.
+     *
+     * ### Usage
+     *
+     * - `Router::url('/posts/edit/1');` Returns the string with the base dir prepended.
+     *   This usage does not use reverser routing.
+     * - `Router::url(['controller' => 'Posts', 'action' => 'edit']);` Returns a URL
+     *   generated through reverse routing.
+     * - `Router::url(['_name' => 'custom-name', ...]);` Returns a URL generated
+     *   through reverse routing. This form allows you to leverage named routes.
+     *
+     * There are a few 'special' parameters that can change the final URL string that is generated
+     *
+     * - `_base` - Set to false to remove the base path from the generated URL. If your application
+     *   is not in the root directory, this can be used to generate URLs that are 'cake relative'.
+     *   cake relative URLs are required when using requestAction.
+     * - `_scheme` - Set to create links on different schemes like `webcal` or `ftp`. Defaults
+     *   to the current scheme.
+     * - `_host` - Set the host to use for the link. Defaults to the current host.
+     * - `_port` - Set the port if you need to create links on non-standard ports.
+     * - `_full` - If true output of `Router::fullBaseUrl()` will be prepended to generated URLs.
+     * - `#` - Allows you to set URL hash fragments.
+     * - `_ssl` - Set to true to convert the generated URL to https, or false to force http.
+     * - `_name` - Name of route. If you have setup named routes you can use this key
+     *   to specify it.
+     *
+     * @param \Psr\Http\Message\UriInterface|array|string|null $url An array specifying any of the following:
+     *   'controller', 'action', 'plugin' additionally, you can provide routed
+     *   elements or query string parameters. If string it can be name any valid url
+     *   string or it can be an UriInterface instance.
+     * @param bool $full If true, the full base URL will be prepended to the result.
+     *   Default is false.
+     * @return string Full translated URL with base path.
+     * @throws \Cake\Core\Exception\CakeException When the route name is not found
+     */
+    // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!!
+    //https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
+
+    // TODO : Virer la possibilité de passer un tableau pour le paramétre $url !!!!
+    // TODO : pourquoi on peut passer null comme valeur au paramétre $url ????
+    // TODO : corriger le phpdoc pour le paramétre $url !!!
+    private function buildUrl(string $url, bool $full = false): string
+    {
+        $plainString = (
+            strpos($url, 'javascript:') === 0 ||
+            strpos($url, 'mailto:') === 0 ||
+            strpos($url, 'tel:') === 0 ||
+            strpos($url, 'sms:') === 0 ||
+            strpos($url, '#') === 0 ||
+            strpos($url, '?') === 0 ||
+            strpos($url, '//') === 0 ||
+            strpos($url, '://') !== false
+        );
+
+        if ($plainString) {
+            return $url;
+        }
+
+        $context['_base'] = ''; // TODO : code temporaire !!! il va falloir aller chercher le basepath/prefix dans le fichier de config html !!!! et renommer la variable en $prefix
+        $output = $context['_base'] . $url;
+
+        $protocol = preg_match('#^[a-z][a-z0-9+\-.]*\://#i', $output);
+        if ($protocol === 0) {
+            $output = str_replace('//', '/', '/' . $output);
+            if ($full) {
+                $output = static::fullBaseUrl() . $output;
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Generates URL for given image file.
+     *
+     * Depending on options passed provides full URL with domain name. Also calls
+     * `Helper::assetTimestamp()` to add timestamp to local files.
+     *
+     * @param string $path Path string.
+     * @param array<string, mixed> $options Options array. Possible keys:
+     *   `fullBase` Return full URL with domain name
+     *   `pathPrefix` Path prefix for relative URLs
+     *   `plugin` False value will prevent parsing path as a plugin
+     *   `timestamp` Overrides the value of `Asset.timestamp` in Configure.
+     *        Set to false to skip timestamp generation.
+     *        Set to true to apply timestamps when debug is true. Set to 'force' to always
+     *        enable timestamping regardless of debug value.
+     * @return string Generated URL
+     */
+    public function image(string $path, array $options = []): string
+    {
+        $pathPrefix = 'assets/img/'; //Configure::read('App.imageBaseUrl');
+
+        return e($this->assetUrlInternal($path, $options + compact('pathPrefix')));
+    }
+
+    /**
+     * Generates URL for given CSS file.
+     *
+     * Depending on options passed provides full URL with domain name. Also calls
+     * `Helper::assetTimestamp()` to add timestamp to local files.
+     *
+     * @param string $path Path string.
+     * @param array<string, mixed> $options Options array. Possible keys:
+     *   `fullBase` Return full URL with domain name
+     *   `pathPrefix` Path prefix for relative URLs
+     *   `ext` Asset extension to append
+     *   `plugin` False value will prevent parsing path as a plugin
+     *   `timestamp` Overrides the value of `Asset.timestamp` in Configure.
+     *        Set to false to skip timestamp generation.
+     *        Set to true to apply timestamps when debug is true. Set to 'force' to always
+     *        enable timestamping regardless of debug value.
+     * @return string Generated URL
+     */
+    public function css(string $path, array $options = []): string
+    {
+        $pathPrefix = 'assets/css/'; //Configure::read('App.cssBaseUrl');
+        $ext = '.css';
+
+        return e($this->assetUrlInternal($path, $options + compact('pathPrefix', 'ext')));
+    }
+
+    /**
+     * Generates URL for given javascript file.
+     *
+     * Depending on options passed provides full URL with domain name. Also calls
+     * `Helper::assetTimestamp()` to add timestamp to local files.
+     *
+     * @param string $path Path string.
+     * @param array<string, mixed> $options Options array. Possible keys:
+     *   `fullBase` Return full URL with domain name
+     *   `pathPrefix` Path prefix for relative URLs
+     *   `ext` Asset extension to append
+     *   `plugin` False value will prevent parsing path as a plugin
+     *   `timestamp` Overrides the value of `Asset.timestamp` in Configure.
+     *        Set to false to skip timestamp generation.
+     *        Set to true to apply timestamps when debug is true. Set to 'force' to always
+     *        enable timestamping regardless of debug value.
+     * @return string Generated URL
+     */
+    public function script(string $path, array $options = []): string
+    {
+        $pathPrefix = 'assets/js/'; //Configure::read('App.jsBaseUrl');
+        $ext = '.js';
+
+        return e($this->assetUrlInternal($path, $options + compact('pathPrefix', 'ext')));
+    }
+
 
     /**
      * Generates URL for given asset file.
@@ -70,20 +227,22 @@ final class UrlHelper
      * @param array<string, mixed> $options Options array.
      * @return string Generated URL
      */
-    // TODO : faire un h() de la valeur de retour !!!! cad un escape
+    // TODO : virer la notion de plugin
     public function assetUrl(string $path, array $options = []): string
     {
-        //$options += ['theme' => $this->_View->getTheme()];
-        //return h($this->_assetUrlClassName::url($path, $options));
+        return e($this->assetUrlInternal($path, $options));
+    }
 
-
+    private function assetUrlInternal(string $path, array $options = []): string
+    {
         if (preg_match('/^data:[a-z]+\/[a-z]+;/', $path)) {
             return $path;
         }
 
         if (strpos($path, '://') !== false || preg_match('/^[a-z]+:/i', $path)) {
             //return ltrim(Router::url($path), '/');
-            return ltrim($this->routerUrl($path), '/');
+            //return ltrim($this->routerUrl($path), '/'); // TODO : je pense qu'il suffit de retourner le $path plutot que de passer par cette méthode routerUrl() !!!
+            return $path;
         }
 
 /*
@@ -92,8 +251,11 @@ final class UrlHelper
         }
 */
 
+        // TODO : vérifier pourquoi on fait dans ce IF un controle sur la condition :    $path[0] !== '/'
         if (!empty($options['pathPrefix']) && $path[0] !== '/') {
+            /*
             $pathPrefix = $options['pathPrefix'];
+
             $placeHolderVal = '';
             if (!empty($options['theme'])) {
                 $placeHolderVal = static::inflectString($options['theme']) . '/';
@@ -101,8 +263,12 @@ final class UrlHelper
                 $placeHolderVal = static::inflectString($plugin) . '/';
             }
 
-            $path = str_replace('{plugin}', $placeHolderVal, $pathPrefix) . $path;
+            $path = str_replace('{plugin}', $placeHolderVal, $pathPrefix) . $path; // TODO : en fait il suffit de faire un $path = $pathPrefix . $path;
+            */
+
+            $path = $options['pathPrefix'] . $path;
         }
+
         if (
             !empty($options['ext']) &&
             strpos($path, '?') === false &&
@@ -113,9 +279,11 @@ final class UrlHelper
 
         // Check again if path has protocol as `pathPrefix` could be for CDNs.
         if (preg_match('|^([a-z0-9]+:)?//|', $path)) {
-            return $this->routerUrl($path);
+            //return $this->routerUrl($path); // TODO : je pense qu'il suffit de retourner le $path plutot que de passer par cette méthode routerUrl() !!!
+            return $path;
         }
 
+/*
         if (isset($plugin)) {
             $path = static::inflectString($plugin) . '/' . $path;
         }
@@ -124,6 +292,7 @@ final class UrlHelper
         if (array_key_exists('timestamp', $options)) {
             $optionTimestamp = $options['timestamp'];
         }
+*/
 
         /*
         $webPath = static::assetTimestamp(
@@ -170,184 +339,5 @@ final class UrlHelper
 
         return str_replace($path, $encoded, $url);
     }
-
-
-
-
-    /**
-     * Finds URL for specified action.
-     *
-     * Returns a URL pointing to a combination of controller and action.
-     *
-     * ### Usage
-     *
-     * - `Router::url('/posts/edit/1');` Returns the string with the base dir prepended.
-     *   This usage does not use reverser routing.
-     * - `Router::url(['controller' => 'Posts', 'action' => 'edit']);` Returns a URL
-     *   generated through reverse routing.
-     * - `Router::url(['_name' => 'custom-name', ...]);` Returns a URL generated
-     *   through reverse routing. This form allows you to leverage named routes.
-     *
-     * There are a few 'special' parameters that can change the final URL string that is generated
-     *
-     * - `_base` - Set to false to remove the base path from the generated URL. If your application
-     *   is not in the root directory, this can be used to generate URLs that are 'cake relative'.
-     *   cake relative URLs are required when using requestAction.
-     * - `_scheme` - Set to create links on different schemes like `webcal` or `ftp`. Defaults
-     *   to the current scheme.
-     * - `_host` - Set the host to use for the link. Defaults to the current host.
-     * - `_port` - Set the port if you need to create links on non-standard ports.
-     * - `_full` - If true output of `Router::fullBaseUrl()` will be prepended to generated URLs.
-     * - `#` - Allows you to set URL hash fragments.
-     * - `_ssl` - Set to true to convert the generated URL to https, or false to force http.
-     * - `_name` - Name of route. If you have setup named routes you can use this key
-     *   to specify it.
-     *
-     * @param \Psr\Http\Message\UriInterface|array|string|null $url An array specifying any of the following:
-     *   'controller', 'action', 'plugin' additionally, you can provide routed
-     *   elements or query string parameters. If string it can be name any valid url
-     *   string or it can be an UriInterface instance.
-     * @param bool $full If true, the full base URL will be prepended to the result.
-     *   Default is false.
-     * @return string Full translated URL with base path.
-     * @throws \Cake\Core\Exception\CakeException When the route name is not found
-     */
-    // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!!
-    //https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
-    private function routerUrl($url = null, bool $full = false): string
-    {
-
-        $context['_base'] = ''; // TODO : code temporaire !!!
-
-        /*
-        $context = static::$_requestContext;
-        $request = static::getRequest();
-
-        $context['_base'] = $context['_base'] ?? Configure::read('App.base') ?: '';
-
-        if (empty($url)) {
-            $here = $request ? $request->getRequestTarget() : '/';
-            $output = $context['_base'] . $here;
-            if ($full) {
-                $output = static::fullBaseUrl() . $output;
-            }
-
-            return $output;
-        }
-
-        $params = [
-            'plugin' => null,
-            'controller' => null,
-            'action' => 'index',
-            '_ext' => null,
-        ];
-        if (!empty($context['params'])) {
-            $params = $context['params'];
-        }
-*/
-
-
-        $params = [
-            'plugin' => null,
-            'controller' => null,
-            'action' => 'index',
-            '_ext' => null,
-        ];
-
-
-
-
-
-        $frag = '';
-
-        if (is_array($url)) {
-            if (isset($url['_path'])) {
-                $url = self::unwrapShortString($url);
-            }
-
-            if (isset($url['_ssl'])) {
-                $url['_scheme'] = $url['_ssl'] === true ? 'https' : 'http';
-            }
-
-            if (isset($url['_full']) && $url['_full'] === true) {
-                $full = true;
-            }
-            if (isset($url['#'])) {
-                $frag = '#' . $url['#'];
-            }
-            unset($url['_ssl'], $url['_full'], $url['#']);
-
-            //$url = static::_applyUrlFilters($url);
-
-            if (!isset($url['_name'])) {
-                // Copy the current action if the controller is the current one.
-                if (
-                    empty($url['action']) &&
-                    (
-                        empty($url['controller']) ||
-                        $params['controller'] === $url['controller']
-                    )
-                ) {
-                    $url['action'] = $params['action'];
-                }
-
-                // Keep the current prefix around if none set.
-                if (isset($params['prefix']) && !isset($url['prefix'])) {
-                    $url['prefix'] = $params['prefix'];
-                }
-
-                $url += [
-                    'plugin' => $params['plugin'],
-                    'controller' => $params['controller'],
-                    'action' => 'index',
-                    '_ext' => null,
-                ];
-            }
-
-            // If a full URL is requested with a scheme the host should default
-            // to App.fullBaseUrl to avoid corrupt URLs
-            if ($full && isset($url['_scheme']) && !isset($url['_host'])) {
-                $url['_host'] = $context['_host'];
-            }
-            $context['params'] = $params;
-
-
-
-            // TODO : à corriger !!!!!! code temporaire
-            //$output = static::$_collection->match($url, $context);
-            $output = $url;
-
-
-        } else {
-            $url = (string)$url;
-
-            $plainString = (
-                strpos($url, 'javascript:') === 0 ||
-                strpos($url, 'mailto:') === 0 ||
-                strpos($url, 'tel:') === 0 ||
-                strpos($url, 'sms:') === 0 ||
-                strpos($url, '#') === 0 ||
-                strpos($url, '?') === 0 ||
-                strpos($url, '//') === 0 ||
-                strpos($url, '://') !== false
-            );
-
-            if ($plainString) {
-                return $url;
-            }
-            $output = $context['_base'] . $url;
-        }
-
-        $protocol = preg_match('#^[a-z][a-z0-9+\-.]*\://#i', $output);
-        if ($protocol === 0) {
-            $output = str_replace('//', '/', '/' . $output);
-            if ($full) {
-                $output = static::fullBaseUrl() . $output;
-            }
-        }
-
-        return $output . $frag;
-    }
-
 
 }

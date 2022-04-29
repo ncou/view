@@ -65,6 +65,7 @@ final class NativeView implements ViewInterface
             require func_get_arg(0);
         };
 
+
         $levels = ob_get_level(); // TODO : renommer la variable en $level : https://github.com/thephpleague/plates/blob/v3/src/Template/Template.php#L167
         ob_start();
         ob_implicit_flush(false);
@@ -72,7 +73,7 @@ final class NativeView implements ViewInterface
         try {
             /** @psalm-suppress PossiblyInvalidFunctionCall */
             $renderer->bindTo($this->context)($this->path, $parameters); // TODO : stocker le retour dans une variable $content et faire un return $content à la fin de la fonction ???
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             // TODO : c'est > ou >= qu'il faut utiliser ???
             while (ob_get_level() > $levels) {
                 ob_end_clean();
