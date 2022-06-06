@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\View;
 
-use Chiron\ResponseCreator\ResponseCreator;
-use Chiron\View\TemplateRendererInterface;
-use Psr\Http\Message\ResponseInterface;
-
-use Cake\Core\Configure\Engine\PhpConfig;
-use Cake\Core\Exception\CakeException;
 use RuntimeException;
 
 // TODO : mettre cette classe à la racine du package view, et pas dans le repertoire Helper !!!!
@@ -23,6 +17,7 @@ use RuntimeException;
  * Used by several helpers to provide simple flexible templates
  * for generating HTML and other content.
  */
+// TODO : remplacer les protected par des private car la classe est final
 final class StringTemplate
 {
     /**
@@ -30,48 +25,48 @@ final class StringTemplate
      *
      * @var array<string, bool>
      */
-    protected $compactAttributes = [
+    protected array $compactAttributes = [
         'allowfullscreen' => true,
-        'async' => true,
-        'autofocus' => true,
-        'autoplay' => true,
-        'checked' => true,
-        'compact' => true,
-        'controls' => true,
-        'declare' => true,
-        'default' => true,
-        'defaultchecked' => true,
-        'defaultmuted' => true,
+        'async'           => true,
+        'autofocus'       => true,
+        'autoplay'        => true,
+        'checked'         => true,
+        'compact'         => true,
+        'controls'        => true,
+        'declare'         => true,
+        'default'         => true,
+        'defaultchecked'  => true,
+        'defaultmuted'    => true,
         'defaultselected' => true,
-        'defer' => true,
-        'disabled' => true,
-        'enabled' => true,
-        'formnovalidate' => true,
-        'hidden' => true,
-        'indeterminate' => true,
-        'inert' => true,
-        'ismap' => true,
-        'itemscope' => true,
-        'loop' => true,
-        'multiple' => true,
-        'muted' => true,
-        'nohref' => true,
-        'noresize' => true,
-        'noshade' => true,
-        'novalidate' => true,
-        'nowrap' => true,
-        'open' => true,
-        'pauseonexit' => true,
-        'readonly' => true,
-        'required' => true,
-        'reversed' => true,
-        'scoped' => true,
-        'seamless' => true,
-        'selected' => true,
-        'sortable' => true,
-        'truespeed' => true,
-        'typemustmatch' => true,
-        'visible' => true,
+        'defer'           => true,
+        'disabled'        => true,
+        'enabled'         => true,
+        'formnovalidate'  => true,
+        'hidden'          => true,
+        'indeterminate'   => true,
+        'inert'           => true,
+        'ismap'           => true,
+        'itemscope'       => true,
+        'loop'            => true,
+        'multiple'        => true,
+        'muted'           => true,
+        'nohref'          => true,
+        'noresize'        => true,
+        'noshade'         => true,
+        'novalidate'      => true,
+        'nowrap'          => true,
+        'open'            => true,
+        'pauseonexit'     => true,
+        'readonly'        => true,
+        'required'        => true,
+        'reversed'        => true,
+        'scoped'          => true,
+        'seamless'        => true,
+        'selected'        => true,
+        'sortable'        => true,
+        'truespeed'       => true,
+        'typemustmatch'   => true,
+        'visible'         => true,
     ];
 
     /**
@@ -79,7 +74,7 @@ final class StringTemplate
      *
      * @var array<string, array>
      */
-    protected $compiled = [];
+    protected array $compiled = [];
 
     /**
      * Registers a list of templates by name
@@ -131,7 +126,7 @@ final class StringTemplate
     // TODO : renommer en formatTemplate()
     public function format(string $name, array $data): string
     {
-        if (!isset($this->compiled[$name])) {
+        if (! isset($this->compiled[$name])) {
             throw new RuntimeException("Cannot find template named '$name'.");
         }
 
@@ -185,9 +180,9 @@ final class StringTemplate
     public function formatAttributes(?array $options, ?array $exclude = null): string
     {
         $insertBefore = ' ';
-        $options = (array)$options + ['escape' => true];
+        $options = (array) $options + ['escape' => true];
 
-        if (!is_array($exclude)) {
+        if (! is_array($exclude)) {
             $exclude = [];
         }
 
@@ -198,8 +193,8 @@ final class StringTemplate
         $attributes = [];
 
         foreach ($options as $key => $value) {
-            if (!isset($exclude[$key]) && $value !== false && $value !== null) {
-                $attributes[] = $this->formatAttribute((string)$key, $value, $escape);
+            if (! isset($exclude[$key]) && $value !== false && $value !== null) {
+                $attributes[] = $this->formatAttribute((string) $key, $value, $escape);
             }
         }
         $out = trim(implode(' ', $attributes));
@@ -211,9 +206,9 @@ final class StringTemplate
      * Formats an individual attribute, and returns the string value of the composed attribute.
      * Works with minimized attributes that have the same value as their name such as 'disabled' and 'checked'
      *
-     * @param string $key The name of the attribute to create
-     * @param mixed $value The value of the attribute to create.
-     * @param bool $escape Define if the value must be escaped
+     * @param string $key    The name of the attribute to create
+     * @param mixed  $value  The value of the attribute to create.
+     * @param bool   $escape Define if the value must be escaped
      *
      * @return string The composed attribute.
      */
@@ -227,7 +222,7 @@ final class StringTemplate
         }
         $truthy = [1, '1', true, 'true', $key];
         $isMinimized = isset($this->compactAttributes[$key]);
-        if (!preg_match('/\A(\w|[.-])+\z/', $key)) {
+        if (! preg_match('/\A(\w|[.-])+\z/', $key)) {
             $key = e($key);
         }
         if ($isMinimized && in_array($value, $truthy, true)) {
@@ -246,6 +241,7 @@ final class StringTemplate
      * @param array|string $input The array or string to add the class to
      * @param array<string>|string $newClass the new class or classes to add
      * @param string $useIndex if you are inputting an array with an element other than default of 'class'.
+     *
      * @return array<string>|string
      */
     /*

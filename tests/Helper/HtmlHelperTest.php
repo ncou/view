@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Chiron\View\Tests\Helper;
 
-use Chiron\View\TemplatePath;
-use PHPUnit\Framework\TestCase;
-use Chiron\View\StringTemplate;
+use Chiron\Config\Configure;
+use Chiron\Config\Loader\ArrayLoader;
+use Chiron\Container\Container;
 use Chiron\View\Helper\HtmlHelper;
 
 //https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/tests/TestCase/View/Helper/HtmlHelperTest.php
@@ -18,7 +18,7 @@ class HtmlHelperTest extends AbstractHelperTestCase
      *
      * @var \Chiron\View\Helper\HtmlHelper
      */
-    protected $Html;
+    protected HtmlHelper $Html;
 
     /**
      * setUp method
@@ -123,7 +123,6 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $expected = ['link' => ['href' => 'preg:/.*\/articles\.rss/', 'type' => 'application/atom+xml', 'title' => 'atom']];
         $this->assertHtml($expected, $result);
 */
-
 
         $result = $this->Html->meta('nonexistent');
         $expected = ['<meta'];
@@ -232,27 +231,51 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->nestedList($list);
         $expected = [
             '<ul',
-            '<li', 'Item 1', '/li',
-            '<li', 'Item 2',
-            '<ul', '<li', 'Item 2.1', '/li', '/ul',
+            '<li',
+            'Item 1',
             '/li',
-            '<li', 'Item 3', '/li',
-            '<li', 'Item 4',
+            '<li',
+            'Item 2',
             '<ul',
-            '<li', 'Item 4.1', '/li',
-            '<li', 'Item 4.2', '/li',
-            '<li', 'Item 4.3',
+            '<li',
+            'Item 2.1',
+            '/li',
+            '/ul',
+            '/li',
+            '<li',
+            'Item 3',
+            '/li',
+            '<li',
+            'Item 4',
             '<ul',
-            '<li', 'Item 4.3.1', '/li',
-            '<li', 'Item 4.3.2', '/li',
+            '<li',
+            'Item 4.1',
+            '/li',
+            '<li',
+            'Item 4.2',
+            '/li',
+            '<li',
+            'Item 4.3',
+            '<ul',
+            '<li',
+            'Item 4.3.1',
+            '/li',
+            '<li',
+            'Item 4.3.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
             '/li',
-            '<li', 'Item 5',
+            '<li',
+            'Item 5',
             '<ul',
-            '<li', 'Item 5.1', '/li',
-            '<li', 'Item 5.2', '/li',
+            '<li',
+            'Item 5.1',
+            '/li',
+            '<li',
+            'Item 5.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
@@ -265,27 +288,51 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->nestedList($list, ['tag' => 'ol']);
         $expected = [
             '<ol',
-            '<li', 'Item 1', '/li',
-            '<li', 'Item 2',
-            '<ol', '<li', 'Item 2.1', '/li', '/ol',
+            '<li',
+            'Item 1',
             '/li',
-            '<li', 'Item 3', '/li',
-            '<li', 'Item 4',
+            '<li',
+            'Item 2',
             '<ol',
-            '<li', 'Item 4.1', '/li',
-            '<li', 'Item 4.2', '/li',
-            '<li', 'Item 4.3',
+            '<li',
+            'Item 2.1',
+            '/li',
+            '/ol',
+            '/li',
+            '<li',
+            'Item 3',
+            '/li',
+            '<li',
+            'Item 4',
             '<ol',
-            '<li', 'Item 4.3.1', '/li',
-            '<li', 'Item 4.3.2', '/li',
+            '<li',
+            'Item 4.1',
+            '/li',
+            '<li',
+            'Item 4.2',
+            '/li',
+            '<li',
+            'Item 4.3',
+            '<ol',
+            '<li',
+            'Item 4.3.1',
+            '/li',
+            '<li',
+            'Item 4.3.2',
+            '/li',
             '/ol',
             '/li',
             '/ol',
             '/li',
-            '<li', 'Item 5',
+            '<li',
+            'Item 5',
             '<ol',
-            '<li', 'Item 5.1', '/li',
-            '<li', 'Item 5.2', '/li',
+            '<li',
+            'Item 5.1',
+            '/li',
+            '<li',
+            'Item 5.2',
+            '/li',
             '/ol',
             '/li',
             '/ol',
@@ -298,27 +345,51 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->nestedList($list, ['class' => 'list']);
         $expected = [
             ['ul' => ['class' => 'list']],
-            '<li', 'Item 1', '/li',
-            '<li', 'Item 2',
-            ['ul' => ['class' => 'list']], '<li', 'Item 2.1', '/li', '/ul',
+            '<li',
+            'Item 1',
             '/li',
-            '<li', 'Item 3', '/li',
-            '<li', 'Item 4',
+            '<li',
+            'Item 2',
             ['ul' => ['class' => 'list']],
-            '<li', 'Item 4.1', '/li',
-            '<li', 'Item 4.2', '/li',
-            '<li', 'Item 4.3',
+            '<li',
+            'Item 2.1',
+            '/li',
+            '/ul',
+            '/li',
+            '<li',
+            'Item 3',
+            '/li',
+            '<li',
+            'Item 4',
             ['ul' => ['class' => 'list']],
-            '<li', 'Item 4.3.1', '/li',
-            '<li', 'Item 4.3.2', '/li',
+            '<li',
+            'Item 4.1',
+            '/li',
+            '<li',
+            'Item 4.2',
+            '/li',
+            '<li',
+            'Item 4.3',
+            ['ul' => ['class' => 'list']],
+            '<li',
+            'Item 4.3.1',
+            '/li',
+            '<li',
+            'Item 4.3.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
             '/li',
-            '<li', 'Item 5',
+            '<li',
+            'Item 5',
             ['ul' => ['class' => 'list']],
-            '<li', 'Item 5.1', '/li',
-            '<li', 'Item 5.2', '/li',
+            '<li',
+            'Item 5.1',
+            '/li',
+            '<li',
+            'Item 5.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
@@ -328,27 +399,51 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->nestedList($list, [], ['class' => 'item']);
         $expected = [
             '<ul',
-            ['li' => ['class' => 'item']], 'Item 1', '/li',
-            ['li' => ['class' => 'item']], 'Item 2',
-            '<ul', ['li' => ['class' => 'item']], 'Item 2.1', '/li', '/ul',
+            ['li' => ['class' => 'item']],
+            'Item 1',
             '/li',
-            ['li' => ['class' => 'item']], 'Item 3', '/li',
-            ['li' => ['class' => 'item']], 'Item 4',
+            ['li' => ['class' => 'item']],
+            'Item 2',
             '<ul',
-            ['li' => ['class' => 'item']], 'Item 4.1', '/li',
-            ['li' => ['class' => 'item']], 'Item 4.2', '/li',
-            ['li' => ['class' => 'item']], 'Item 4.3',
+            ['li' => ['class' => 'item']],
+            'Item 2.1',
+            '/li',
+            '/ul',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 3',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4',
             '<ul',
-            ['li' => ['class' => 'item']], 'Item 4.3.1', '/li',
-            ['li' => ['class' => 'item']], 'Item 4.3.2', '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.1',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.2',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.3',
+            '<ul',
+            ['li' => ['class' => 'item']],
+            'Item 4.3.1',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.3.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
             '/li',
-            ['li' => ['class' => 'item']], 'Item 5',
+            ['li' => ['class' => 'item']],
+            'Item 5',
             '<ul',
-            ['li' => ['class' => 'item']], 'Item 5.1', '/li',
-            ['li' => ['class' => 'item']], 'Item 5.2', '/li',
+            ['li' => ['class' => 'item']],
+            'Item 5.1',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 5.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
@@ -358,27 +453,51 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->nestedList($list, [], ['even' => 'even', 'odd' => 'odd']);
         $expected = [
             '<ul',
-            ['li' => ['class' => 'odd']], 'Item 1', '/li',
-            ['li' => ['class' => 'even']], 'Item 2',
-            '<ul', ['li' => ['class' => 'odd']], 'Item 2.1', '/li', '/ul',
+            ['li' => ['class' => 'odd']],
+            'Item 1',
             '/li',
-            ['li' => ['class' => 'odd']], 'Item 3', '/li',
-            ['li' => ['class' => 'even']], 'Item 4',
+            ['li' => ['class' => 'even']],
+            'Item 2',
             '<ul',
-            ['li' => ['class' => 'odd']], 'Item 4.1', '/li',
-            ['li' => ['class' => 'even']], 'Item 4.2', '/li',
-            ['li' => ['class' => 'odd']], 'Item 4.3',
+            ['li' => ['class' => 'odd']],
+            'Item 2.1',
+            '/li',
+            '/ul',
+            '/li',
+            ['li' => ['class' => 'odd']],
+            'Item 3',
+            '/li',
+            ['li' => ['class' => 'even']],
+            'Item 4',
             '<ul',
-            ['li' => ['class' => 'odd']], 'Item 4.3.1', '/li',
-            ['li' => ['class' => 'even']], 'Item 4.3.2', '/li',
+            ['li' => ['class' => 'odd']],
+            'Item 4.1',
+            '/li',
+            ['li' => ['class' => 'even']],
+            'Item 4.2',
+            '/li',
+            ['li' => ['class' => 'odd']],
+            'Item 4.3',
+            '<ul',
+            ['li' => ['class' => 'odd']],
+            'Item 4.3.1',
+            '/li',
+            ['li' => ['class' => 'even']],
+            'Item 4.3.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
             '/li',
-            ['li' => ['class' => 'odd']], 'Item 5',
+            ['li' => ['class' => 'odd']],
+            'Item 5',
             '<ul',
-            ['li' => ['class' => 'odd']], 'Item 5.1', '/li',
-            ['li' => ['class' => 'even']], 'Item 5.2', '/li',
+            ['li' => ['class' => 'odd']],
+            'Item 5.1',
+            '/li',
+            ['li' => ['class' => 'even']],
+            'Item 5.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
@@ -388,27 +507,51 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->nestedList($list, ['class' => 'list'], ['class' => 'item']);
         $expected = [
             ['ul' => ['class' => 'list']],
-            ['li' => ['class' => 'item']], 'Item 1', '/li',
-            ['li' => ['class' => 'item']], 'Item 2',
-            ['ul' => ['class' => 'list']], ['li' => ['class' => 'item']], 'Item 2.1', '/li', '/ul',
+            ['li' => ['class' => 'item']],
+            'Item 1',
             '/li',
-            ['li' => ['class' => 'item']], 'Item 3', '/li',
-            ['li' => ['class' => 'item']], 'Item 4',
+            ['li' => ['class' => 'item']],
+            'Item 2',
             ['ul' => ['class' => 'list']],
-            ['li' => ['class' => 'item']], 'Item 4.1', '/li',
-            ['li' => ['class' => 'item']], 'Item 4.2', '/li',
-            ['li' => ['class' => 'item']], 'Item 4.3',
+            ['li' => ['class' => 'item']],
+            'Item 2.1',
+            '/li',
+            '/ul',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 3',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4',
             ['ul' => ['class' => 'list']],
-            ['li' => ['class' => 'item']], 'Item 4.3.1', '/li',
-            ['li' => ['class' => 'item']], 'Item 4.3.2', '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.1',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.2',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.3',
+            ['ul' => ['class' => 'list']],
+            ['li' => ['class' => 'item']],
+            'Item 4.3.1',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 4.3.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
             '/li',
-            ['li' => ['class' => 'item']], 'Item 5',
+            ['li' => ['class' => 'item']],
+            'Item 5',
             ['ul' => ['class' => 'list']],
-            ['li' => ['class' => 'item']], 'Item 5.1', '/li',
-            ['li' => ['class' => 'item']], 'Item 5.2', '/li',
+            ['li' => ['class' => 'item']],
+            'Item 5.1',
+            '/li',
+            ['li' => ['class' => 'item']],
+            'Item 5.2',
+            '/li',
             '/ul',
             '/li',
             '/ul',
@@ -506,9 +649,9 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $result = $this->Html->media('video.webm', ['autoload', 'muted' => 'muted']);
         $expected = [
             'video' => [
-                'src' => 'files/video.webm',
+                'src'      => 'files/video.webm',
                 'autoload' => 'autoload',
-                'muted' => 'muted',
+                'muted'    => 'muted',
             ],
             '/video',
         ];
@@ -554,8 +697,6 @@ class HtmlHelperTest extends AbstractHelperTestCase
         ];
         $this->assertHtml($expected, $result);
     }
-
-
 
     /**
      * testImageTag method
@@ -619,15 +760,15 @@ class HtmlHelperTest extends AbstractHelperTestCase
     public function testCharsetTag(): void
     {
         // TODO : code temporaire améliorer le changement de la configuration !!! ****
-        $container = new \Chiron\Container\Container();
+        $container = new Container();
 
-        $loader = new \Chiron\Config\Loader\ArrayLoader([
+        $loader = new ArrayLoader([
             'http' => [
-                'default_charset' => null
-            ]
+                'default_charset' => null,
+            ],
         ]);
-        $configure = new \Chiron\Config\Configure($loader);
-        $container->singleton(\Chiron\Config\Configure::class, $configure);
+        $configure = new Configure($loader);
+        $container->singleton(Configure::class, $configure);
         // *******
 
         //Configure::write('App.encoding', null);
@@ -635,19 +776,16 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $expected = ['meta' => ['charset' => 'utf-8']];
         $this->assertHtml($expected, $result);
 
-
-
-
         // TODO : code temporaire améliorer le changement de la configuration !!! ****
-        $container = new \Chiron\Container\Container();
+        $container = new Container();
 
-        $loader = new \Chiron\Config\Loader\ArrayLoader([
+        $loader = new ArrayLoader([
             'http' => [
-                'default_charset' => 'ISO-8859-1'
-            ]
+                'default_charset' => 'ISO-8859-1',
+            ],
         ]);
-        $configure = new \Chiron\Config\Configure($loader);
-        $container->singleton(\Chiron\Config\Configure::class, $configure);
+        $configure = new Configure($loader);
+        $container->singleton(Configure::class, $configure);
         // *******
 
         //Configure::write('App.encoding', 'ISO-8859-1');
@@ -655,13 +793,8 @@ class HtmlHelperTest extends AbstractHelperTestCase
         $expected = ['meta' => ['charset' => 'iso-8859-1']];
         $this->assertHtml($expected, $result);
 
-
-
-
         $result = $this->Html->charset('UTF-7');
         $expected = ['meta' => ['charset' => 'UTF-7']];
         $this->assertHtml($expected, $result);
     }
-
-
 }

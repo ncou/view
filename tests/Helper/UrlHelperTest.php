@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\View\Tests\Helper;
 
-use Chiron\View\TemplatePath;
-use PHPUnit\Framework\TestCase;
-use Chiron\View\StringTemplate;
 use Chiron\View\Helper\UrlHelper;
 
 //https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/tests/TestCase/View/Helper/UrlHelperTest.php
@@ -18,7 +15,7 @@ class UrlHelperTest extends AbstractHelperTestCase
      *
      * @var \Chiron\View\Helper\UrlHelper
      */
-    protected $Helper;
+    protected UrlHelper $Helper;
 
     /**
      * setUp method
@@ -149,7 +146,6 @@ class UrlHelperTest extends AbstractHelperTestCase
         $this->assertSame(e($data), $result);
     }
 
-
     /**
      * Tests assetUrl() with full base URL.
      */
@@ -163,7 +159,6 @@ class UrlHelperTest extends AbstractHelperTestCase
         $result = $this->Helper->assetUrl('img/foo.jpg', ['fullBase' => 'https://xyz/']);
         $this->assertSame('https://xyz/img/foo.jpg', $result);
     }
-
 
     /**
      * test script()
@@ -179,7 +174,6 @@ class UrlHelperTest extends AbstractHelperTestCase
         $this->assertSame(Router::fullBaseUrl() . '/js/post.js', $result);
         */
     }
-
 
     /**
      * test image()
@@ -218,9 +212,4 @@ class UrlHelperTest extends AbstractHelperTestCase
         $result = $this->Helper->css('style');
         $this->assertSame('assets/css/style.css', $result);
     }
-
-
-
-
-
 }

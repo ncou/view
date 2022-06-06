@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Chiron\View\Native;
 
-use Chiron\View\ViewInterface;
 use Chiron\View\ViewContext;
+use Chiron\View\ViewInterface;
+
 //use Chiron\View\Engine\PhpEngine;
 
 // TODO : ajouter une méthode setParameters() ???? Ca permettrait de faire le merge des paramétres plus haut dans le code (dans la classe Engine ou ViewManager par exemple)
@@ -33,7 +34,6 @@ final class NativeView implements ViewInterface
         $this->path = $path;
         $this->parameters = $parameters;
 
-
         $this->context = new ViewContext();
         //$this->engine = new PhpEngine();
     }
@@ -58,13 +58,13 @@ final class NativeView implements ViewInterface
         // TODO : Utiliser une méthode plus poussée (cad en évitant d'écraser les valeurs) pour le merge ? https://github.com/yiisoft/yii-view/blob/master/src/ViewRenderer.php#L330
         $parameters = array_merge($this->parameters, $parameters);
 
+        // No named parameters for this function due to possible collision with extract() vars.
         $renderer = function (): void {
             /** @psalm-suppress MixedArgument */
             extract(func_get_arg(1), EXTR_OVERWRITE);
             /** @psalm-suppress UnresolvableInclude */
             require func_get_arg(0);
         };
-
 
         $levels = ob_get_level(); // TODO : renommer la variable en $level : https://github.com/thephpleague/plates/blob/v3/src/Template/Template.php#L167
         ob_start();
@@ -78,6 +78,7 @@ final class NativeView implements ViewInterface
             while (ob_get_level() > $levels) {
                 ob_end_clean();
             }
+
             // TODO : créer une RenderException : https://github.com/spiral/views/blob/9e78375b2618ab2500b250e6983e6593dcc8d0d9/src/Exception/RenderException.php#L14
             throw $e;
         }
@@ -89,9 +90,8 @@ final class NativeView implements ViewInterface
     /**
      * Set the content for a block. This will overwrite any existing content.
      *
-     * @param string $name Name of the block
+     * @param string $name  Name of the block.
      * @param string $value The content for the block.
-     *
      */
     public function assign(string $name, string $value): self
     {
@@ -100,8 +100,20 @@ final class NativeView implements ViewInterface
         return $this;
     }
 
+    /**
+     * Define a helper with an alias and associated class name.
+     *
+     * @param string $alias  Alias used to access the helper.
+     * @param string $class Class name for the helper.
+     */
+    public function helper(string $alias, string $class): self
+    {
+        $this->context->helper($alias, $class);
+
+        return $this;
+    }
+
     // TODO : ajouter une méthode pour accéder au context ???? genre un "getContext(): ViewContext" ???
 
     // TODO : faire des méthodes proxy pour appeller $this->context->addCssFiles() et $this->context->registerCssFile() + idem pour les scripts. Cela permettra d'enregistrer directement depuis le controller les assets css & scripts
-
 }

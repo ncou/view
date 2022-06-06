@@ -4,66 +4,66 @@ declare(strict_types=1);
 
 namespace Chiron\View\Helper;
 
-use Chiron\ResponseCreator\ResponseCreator;
-use Chiron\View\TemplateRendererInterface;
-use Psr\Http\Message\ResponseInterface;
 use Chiron\View\StringTemplate;
+use Chiron\View\Traits\HelperAccessorTrait;
 
 // TODO : créer un helper dédié aux tableaux !!!! https://github.com/JelmerD/TableHelper/blob/master/src/View/Helper/TableHelper.php
 
 // TODO : passer les protected en private car la classe est final !!!!
-final class HtmlHelper extends Helper
+final class HtmlHelper //extends Helper
 {
+    use HelperAccessorTrait;
+
     /**
      * List of helpers used by this helper
      *
      * @var array
      */
-    protected $helpers = ['Url'];
+    protected array $helpers = ['Url' => UrlHelper::class];
 
     /**
      * Names of script & css files that have been included once
      *
      * @var array<string, array>
      */
-    protected $_includedAssets = [];
+    protected array $_includedAssets = [];
 
     /**
      * Default config for this class
      *
      * @var array<string, string>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'templates' => [
-            'meta' => '<meta{{attrs}}/>',
-            'metalink' => '<link href="{{url}}"{{attrs}}/>',
-            'link' => '<a href="{{url}}"{{attrs}}>{{content}}</a>',
-            'mailto' => '<a href="mailto:{{url}}"{{attrs}}>{{content}}</a>',
-            'image' => '<img src="{{url}}"{{attrs}}/>',
-            'tableheader' => '<th{{attrs}}>{{content}}</th>', // TODO : à virer !!!
-            'tableheaderrow' => '<tr{{attrs}}>{{content}}</tr>', // TODO : à virer !!!
-            'tablecell' => '<td{{attrs}}>{{content}}</td>', // TODO : à virer !!!
-            'tablerow' => '<tr{{attrs}}>{{content}}</tr>', // TODO : à virer !!!
-            'block' => '<div{{attrs}}>{{content}}</div>',
-            'blockstart' => '<div{{attrs}}>',
-            'blockend' => '</div>',
-            'tag' => '<{{tag}}{{attrs}}>{{content}}</{{tag}}>',
-            'tagstart' => '<{{tag}}{{attrs}}>',
-            'tagend' => '</{{tag}}>',
-            'tagselfclosing' => '<{{tag}}{{attrs}}/>',
-            'para' => '<p{{attrs}}>{{content}}</p>',
-            'parastart' => '<p{{attrs}}>',
-            'css' => '<link rel="{{rel}}" href="{{url}}"{{attrs}}/>',
-            'style' => '<style{{attrs}}>{{content}}</style>',
-            'charset' => '<meta charset="{{charset}}"/>',
-            'ul' => '<ul{{attrs}}>{{content}}</ul>',
-            'ol' => '<ol{{attrs}}>{{content}}</ol>',
-            'li' => '<li{{attrs}}>{{content}}</li>',
-            'javascriptblock' => '<script{{attrs}}>{{content}}</script>',
-            'javascriptstart' => '<script>',
-            'javascriptlink' => '<script src="{{url}}"{{attrs}}></script>',
-            'javascriptend' => '</script>',
-            'confirmJs' => '{{confirm}}', // TODO : à virer !!!!
+            'meta'            => '<meta{{attrs}}/>',
+            'metalink'        => '<link href="{{url}}"{{attrs}}/>',
+            'link'            => '<a href="{{url}}"{{attrs}}>{{content}}</a>',
+            'mailto'          => '<a href="mailto:{{url}}"{{attrs}}>{{content}}</a>', // TODO : ca semble pas utilisé dans le code ???? à virer ????
+            'image'           => '<img src="{{url}}"{{attrs}}/>',
+            'tableheader'     => '<th{{attrs}}>{{content}}</th>', // TODO : à virer !!!
+            'tableheaderrow'  => '<tr{{attrs}}>{{content}}</tr>', // TODO : à virer !!!
+            'tablecell'       => '<td{{attrs}}>{{content}}</td>', // TODO : à virer !!!
+            'tablerow'        => '<tr{{attrs}}>{{content}}</tr>', // TODO : à virer !!!
+            'block'           => '<div{{attrs}}>{{content}}</div>',
+            'blockstart'      => '<div{{attrs}}>',
+            'blockend'        => '</div>',
+            'tag'             => '<{{tag}}{{attrs}}>{{content}}</{{tag}}>',
+            'tagstart'        => '<{{tag}}{{attrs}}>',
+            'tagend'          => '</{{tag}}>',
+            'tagselfclosing'  => '<{{tag}}{{attrs}}/>',
+            'para'            => '<p{{attrs}}>{{content}}</p>',
+            'parastart'       => '<p{{attrs}}>',
+            'css'             => '<link rel="{{rel}}" href="{{url}}"{{attrs}}/>',
+            'style'           => '<style{{attrs}}>{{content}}</style>',
+            'charset'         => '<meta charset="{{charset}}"/>',
+            'ul'              => '<ul{{attrs}}>{{content}}</ul>',
+            'ol'              => '<ol{{attrs}}>{{content}}</ol>',
+            'li'              => '<li{{attrs}}>{{content}}</li>',
+            'javascriptblock' => '<script{{attrs}}>{{content}}</script>', // TODO : non utilisé, il faudra virer ce template
+            'javascriptstart' => '<script>', // TODO : non utilisé, il faudra virer ce template
+            'javascriptlink'  => '<script src="{{url}}"{{attrs}}></script>',
+            'javascriptend'   => '</script>', // TODO : non utilisé, il faudra virer ce template
+            'confirmJs'       => '{{confirm}}', // TODO : à virer !!!!
         ],
     ];
 
@@ -99,32 +99,33 @@ final class HtmlHelper extends Helper
      * - `block` - Set to true to append output to view block "meta" or provide
      *   custom block name.
      *
-     * @param array<string, mixed>|string $type The title of the external resource, Or an array of attributes for a
-     *   custom meta tag.
-     * @param array|string|null $content The address of the external resource or string for content attribute
-     * @param array<string, mixed> $options Other attributes for the generated tag. If the type attribute is html,
-     *    rss, atom, or icon, the mime-type is returned.
+     * @param array<string, mixed>|string $type    The title of the external resource, Or an array of attributes for a
+     *      custom meta tag.
+     * @param array|string|null           $content The address of the external resource or string for content attribute
+     * @param array<string, mixed>        $options Other attributes for the generated tag. If the type attribute is html,
+     *           rss, atom, or icon, the mime-type is returned.
      *
      * @return string|null A completed `<link />` element, or null if the element was sent to a block.
      *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#creating-meta-tags
      */
-    public function meta($type, $content = null, array $options = []): ?string
+    // TODO : faire en sorte qu'il y ait jamais un retour à NULL + changer le return typehint
+    public function meta(array|string $type, array|string|null $content = null, array $options = []): ?string
     {
-        if (!is_array($type)) {
+        if (! is_array($type)) {
             $types = [
-                'rss' => ['type' => 'application/rss+xml', 'rel' => 'alternate', 'title' => $type, 'link' => $content],
-                'atom' => ['type' => 'application/atom+xml', 'title' => $type, 'link' => $content],
-                'icon' => ['type' => 'image/x-icon', 'rel' => 'icon', 'link' => $content],
-                'keywords' => ['name' => 'keywords', 'content' => $content],
+                'rss'         => ['type' => 'application/rss+xml', 'rel' => 'alternate', 'title' => $type, 'link' => $content],
+                'atom'        => ['type' => 'application/atom+xml', 'title' => $type, 'link' => $content],
+                'icon'        => ['type' => 'image/x-icon', 'rel' => 'icon', 'link' => $content],
+                'keywords'    => ['name' => 'keywords', 'content' => $content],
                 'description' => ['name' => 'description', 'content' => $content],
-                'robots' => ['name' => 'robots', 'content' => $content],
-                'viewport' => ['name' => 'viewport', 'content' => $content],
-                'canonical' => ['rel' => 'canonical', 'link' => $content],
-                'next' => ['rel' => 'next', 'link' => $content],
-                'prev' => ['rel' => 'prev', 'link' => $content],
-                'first' => ['rel' => 'first', 'link' => $content],
-                'last' => ['rel' => 'last', 'link' => $content],
+                'robots'      => ['name' => 'robots', 'content' => $content],
+                'viewport'    => ['name' => 'viewport', 'content' => $content],
+                'canonical'   => ['rel' => 'canonical', 'link' => $content],
+                'next'        => ['rel' => 'next', 'link' => $content],
+                'prev'        => ['rel' => 'prev', 'link' => $content],
+                'first'       => ['rel' => 'first', 'link' => $content],
+                'last'        => ['rel' => 'last', 'link' => $content],
             ];
 
             if ($type === 'icon' && $content === null) {
@@ -133,7 +134,7 @@ final class HtmlHelper extends Helper
 
             if (isset($types[$type])) {
                 $type = $types[$type];
-            } elseif (!isset($options['type']) && $content !== null) {
+            } elseif (! isset($options['type']) && $content !== null) {
                 if (is_array($content) && isset($content['_ext'])) {
                     $type = $types[$content['_ext']];
                 } else {
@@ -151,7 +152,6 @@ final class HtmlHelper extends Helper
         $out = '';
 
         if (isset($options['link'])) {
-
             // TODO : virer le cas du array pour le link car on va pas gérer ce cas là !!!
             if (is_array($options['link'])) {
                 $options['link'] = $this->Url->build($options['link']);
@@ -160,13 +160,13 @@ final class HtmlHelper extends Helper
             }
             if (isset($options['rel']) && $options['rel'] === 'icon') {
                 $out = $this->templater()->format('metalink', [
-                    'url' => $options['link'],
+                    'url'   => $options['link'],
                     'attrs' => $this->templater()->formatAttributes($options, ['block', 'link']),
                 ]);
                 $options['rel'] = 'shortcut icon'; // TODO : à virer le shortcut icon n'est plus un tag supporté par html5 c'est pour les vieux navigateurs MS IE
             }
             $out .= $this->templater()->format('metalink', [
-                'url' => $options['link'],
+                'url'   => $options['link'],
                 'attrs' => $this->templater()->formatAttributes($options, ['block', 'link']),
             ]);
         } else {
@@ -202,15 +202,17 @@ final class HtmlHelper extends Helper
      *   over value of `escape`)
      * - `confirm` JavaScript confirmation message.
      *
-     * @param array|string $title The content to be wrapped by `<a>` tags.
-     *   Can be an array if $url is null. If $url is null, $title will be used as both the URL and title.
-     * @param array|string|null $url Cake-relative URL or array of URL parameters, or
-     *   external URL (starts with http://)
+     * @param array|string         $title   The content to be wrapped by `<a>` tags.
+     *             Can be an array if $url is null. If $url is null, $title will be used as both the URL and title.
+     * @param array|string|null    $url     Cake-relative URL or array of URL parameters, or
+     *          external URL (starts with http://)
      * @param array<string, mixed> $options Array of options and HTML attributes.
+     *
      * @return string An `<a />` element.
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#creating-links
      */
-    public function link($title, $url = null, array $options = []): string
+    public function link(array|string $title, array|string|null $url = null, array $options = []): string
     {
         $escapeTitle = true;
 
@@ -260,12 +262,11 @@ final class HtmlHelper extends Helper
 */
 
         return $this->templater()->format('link', [
-            'url' => $url,
-            'attrs' => $templater->formatAttributes($options),
+            'url'     => $url,
+            'attrs'   => $templater->formatAttributes($options),
             'content' => $title,
         ]);
     }
-
 
     /**
      * Creates a link element for CSS stylesheets.
@@ -311,26 +312,29 @@ final class HtmlHelper extends Helper
      * `cspStyleNonce` attribute, that value will be applied as the `nonce` attribute on the
      * generated HTML.
      *
-     * @param array<string>|string $path The name of a CSS style sheet or an array containing names of
-     *   CSS stylesheets. If `$path` is prefixed with '/', the path will be relative to the webroot
-     *   of your application. Otherwise, the path will be relative to your CSS path, usually webroot/css.
+     * @param array<string>|string $path    The name of a CSS style sheet or an array containing names of
+     *      CSS stylesheets. If `$path` is prefixed with '/', the path will be relative to the webroot
+     *      of your application. Otherwise, the path will be relative to your CSS path, usually webroot/css.
      * @param array<string, mixed> $options Array of options and HTML arguments.
+     *
      * @return string|null CSS `<link />` or `<style />` tag, depending on the type of link.
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#linking-to-css-files
      */
-    public function css($path, array $options = []): ?string
+    // TODO : faire en sorte qu'il y ait jamais un retour à NULL + changer le return typehint
+    public function css(array|string $path, array $options = []): ?string
     {
         $options += [
-            'once' => true,
+            'once'  => true,
             'block' => null,
-            'rel' => 'stylesheet',
+            'rel'   => 'stylesheet',
             //'nonce' => $this->_View->getRequest()->getAttribute('cspStyleNonce'),
         ];
 
         if (is_array($path)) {
             $out = '';
             foreach ($path as $i) {
-                $out .= "\n\t" . (string)$this->css($i, $options);
+                $out .= "\n\t" . (string) $this->css($i, $options);
             }
             if (empty($options['block'])) {
                 return $out . "\n";
@@ -351,13 +355,13 @@ final class HtmlHelper extends Helper
         $templater = $this->templater();
         if ($options['rel'] === 'import') {
             $out = $templater->format('style', [
-                'attrs' => $templater->formatAttributes($options, ['rel', 'block']),
+                'attrs'   => $templater->formatAttributes($options, ['rel', 'block']),
                 'content' => '@import url(' . $url . ');',
             ]);
         } else {
             $out = $templater->format('css', [
-                'rel' => $options['rel'],
-                'url' => $url,
+                'rel'   => $options['rel'],
+                'url'   => $url,
                 'attrs' => $templater->formatAttributes($options, ['rel', 'block']),
             ]);
         }
@@ -412,17 +416,20 @@ final class HtmlHelper extends Helper
      * If the current request has a `cspScriptNonce` attribute, that value will
      * be inserted as a `nonce` attribute on the script tag.
      *
-     * @param array<string>|string $url String or array of javascript files to include
+     * @param array<string>|string $url     String or array of javascript files to include
      * @param array<string, mixed> $options Array of options, and html attributes see above.
+     *
      * @return string|null String of `<script />` tags or null if block is specified in options
      *   or if $once is true and the file has been included before.
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#linking-to-javascript-files
      */
-    public function script($url, array $options = []): ?string
+    // TODO : faire en sorte qu'il y ait jamais un retour à NULL + changer le return typehint
+    public function script(array|string $url, array $options = []): ?string
     {
         $defaults = [
             'block' => null,
-            'once' => true,
+            'once'  => true,
             //'nonce' => $this->_View->getRequest()->getAttribute('cspScriptNonce'),
         ];
         $options += $defaults;
@@ -430,7 +437,7 @@ final class HtmlHelper extends Helper
         if (is_array($url)) {
             $out = '';
             foreach ($url as $i) {
-                $out .= "\n\t" . (string)$this->script($i, $options);
+                $out .= "\n\t" . (string) $this->script($i, $options);
             }
             if (empty($options['block'])) {
                 return $out . "\n";
@@ -448,7 +455,7 @@ final class HtmlHelper extends Helper
         $this->_includedAssets[__METHOD__][$url] = true;
 
         $out = $this->templater()->format('javascriptlink', [
-            'url' => $url,
+            'url'   => $url,
             'attrs' => $this->templater()->formatAttributes($options, ['block', 'once']),
         ]);
 
@@ -489,12 +496,14 @@ final class HtmlHelper extends Helper
      * - `fullBase` If true the src attribute will get a full address for the image file.
      * - `plugin` False value will prevent parsing path as a plugin
      *
-     * @param array|string $path Path to the image file, relative to the webroot/img/ directory.
+     * @param array|string         $path    Path to the image file, relative to the webroot/img/ directory.
      * @param array<string, mixed> $options Array of HTML attributes. See above for special options.
+     *
      * @return string completed img tag
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#linking-to-images
      */
-    public function image($path, array $options = []): string
+    public function image(array|string $path, array $options = []): string
     {
         // TODO : virer le cas ou on passe un tableau pour le path !!!!
         if (is_string($path)) {
@@ -504,26 +513,26 @@ final class HtmlHelper extends Helper
         }
         $options = array_diff_key($options, ['fullBase' => null, 'pathPrefix' => null]);
 
-        if (!isset($options['alt'])) {
+        if (! isset($options['alt'])) {
             $options['alt'] = '';
         }
 
         $url = false;
-        if (!empty($options['url'])) {
+        if (! empty($options['url'])) {
             $url = $options['url'];
             unset($options['url']);
         }
 
         $templater = $this->templater();
         $image = $templater->format('image', [
-            'url' => $path,
+            'url'   => $path,
             'attrs' => $templater->formatAttributes($options),
         ]);
 
         if ($url) {
             return $templater->format('link', [
-                'url' => $this->Url->build($url),
-                'attrs' => null,
+                'url'     => $this->Url->build($url),
+                'attrs'   => null,
                 'content' => $image,
             ]);
         }
@@ -586,20 +595,21 @@ final class HtmlHelper extends Helper
      * - `pathPrefix` Path prefix to use for relative URLs, defaults to 'files/'
      * - `fullBase` If provided the src attribute will get a full address including domain name
      *
-     * @param array|string $path Path to the video file, relative to the webroot/{$options['pathPrefix']} directory.
-     *  Or an array where each item itself can be a path string or an associate array containing keys `src` and `type`
+     * @param array|string         $path    Path to the video file, relative to the webroot/{$options['pathPrefix']} directory.
+     *             Or an array where each item itself can be a path string or an associate array containing keys `src` and `type`
      * @param array<string, mixed> $options Array of HTML attributes, and special options above.
+     *
      * @return string Generated media element
      */
-    public function media($path, array $options = []): string
+    public function media(array|string $path, array $options = []): string
     {
         $options += [
-            'tag' => null,
+            'tag'        => null,
             'pathPrefix' => 'files/',
-            'text' => '',
+            'text'       => '',
         ];
 
-        if (!empty($options['tag'])) {
+        if (! empty($options['tag'])) {
             $tag = $options['tag'];
         } else {
             $tag = null;
@@ -613,13 +623,13 @@ final class HtmlHelper extends Helper
                         'src' => $source,
                     ];
                 }
-                if (!isset($source['type'])) {
+                if (! isset($source['type'])) {
                     $ext = pathinfo($source['src'], PATHINFO_EXTENSION);
                     $source['type'] = $this->getMimeType($ext);
                 }
                 $source['src'] = $this->Url->assetUrl($source['src'], $options);
                 $sourceTags .= $this->templater()->format('tagselfclosing', [
-                    'tag' => 'source',
+                    'tag'   => 'source',
                     'attrs' => $this->templater()->formatAttributes($source),
                 ]);
             }
@@ -627,7 +637,7 @@ final class HtmlHelper extends Helper
             $options['text'] = $sourceTags . $options['text'];
             unset($options['fullBase']);
         } else {
-            if (empty($path) && !empty($options['src'])) {
+            if (empty($path) && ! empty($options['src'])) {
                 $path = $options['src'];
             }
             $options['src'] = $this->Url->assetUrl($path, $options);
@@ -660,46 +670,47 @@ final class HtmlHelper extends Helper
         $text = $options['text'];
 
         $options = array_diff_key($options, [
-            'tag' => null,
-            'fullBase' => null,
+            'tag'        => null,
+            'fullBase'   => null,
             'pathPrefix' => null,
-            'text' => null,
+            'text'       => null,
         ]);
 
         return $this->tag($tag, $text, $options);
     }
 
     /**
-     * Returns the mime type definition for an alias
+     * Returns the mime type definition for a given extension. Only support
+     * the most common extension for the 3 supported html audio&video format.
      *
-     * e.g `getMimeType('pdf'); // returns 'application/pdf'`
+     * e.g `getMimeType('mp3'); // returns 'audio/mp3'`
+     *
+     * @see https://www.w3schools.com/tags/tag_audio.asp
+     * @see https://www.w3schools.com/tags/tag_video.asp
      *
      * @param string $alias the content type alias to map
+     *
      * @return array|string|false String mapped mime type or false if $alias is not mapped
      */
     // https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/src/Http/Response.php#L134
     //https://github.com/symfony/mime/blob/6.1/MimeTypes.php#L1820
     //https://github.com/yiisoft/yii2/blob/master/framework/helpers/mimeTypes.php
-    protected function getMimeType(string $alias)
+    protected function getMimeType(string $extension): array|string|false
     {
-        // TODO : ajouter la liste de tous les mimes !!!! pour l'instant c'est juste un exemple !!!!
         $mimeTypes = [
-            'html' => ['text/html', '*/*'],
-            'webp' => 'image/webp',
-            'ogv' => 'video/ogg',
+            'mp3'  => 'audio/mp3',
+            'mpga' => 'audio/mp3',
+            'wav'  => 'audio/wave',
+            'ogg'  => 'audio/ogg',
+            'oga'  => 'audio/ogg',
+            'mp4'  => 'video/mp4',
+            'mp4v' => 'video/mp4',
+            'mpg4' => 'video/mp4',
             'webm' => 'video/webm',
-            'mp4' => 'video/mp4',
-            'mp3' => 'audio/mpeg',
-            'json' => 'application/json',
-            'xml' => ['application/xml', 'text/xml'],
-            'xhtml' => ['application/xhtml+xml', 'application/xhtml', 'text/xhtml'],
-            'webp' => 'image/webp',
-            'rss' => 'application/rss+xml',
-            'ai' => 'application/postscript',
-            'bcpio' => 'application/x-bcpio'
+            'ogv'  => 'video/ogg',
         ];
 
-        return $mimeTypes[$alias] ?? false; // TODO : forcer le $alias en strtolower et renommer ce paramétre en $extension, et retourner un tableau vide si on n'a pas trouvé le mime. Il faudra aussi mettre le return type de la méthode à "array" et pour chaque valeur il faut que ce soit un tableau même d'un seul élément string !!!
+        return $mimeTypes[$extension] ?? false; // TODO : forcer le $alias en strtolower et renommer ce paramétre en $extension, et retourner un tableau vide si on n'a pas trouvé le mime. Il faudra aussi mettre le return type de la méthode à "array" et pour chaque valeur il faut que ce soit un tableau même d'un seul élément string !!!
 
         //return $mimeTypes[strtolower($alias)] ?? [];
     }
@@ -711,15 +722,16 @@ final class HtmlHelper extends Helper
      *
      * - `escape` Whether the contents should be html_entity escaped.
      *
-     * @param string|null $class CSS class name of the div element.
-     * @param string|null $text String content that will appear inside the div element.
-     *   If null, only a start tag will be printed
+     * @param string|null          $class   CSS class name of the div element.
+     * @param string|null          $text    String content that will appear inside the div element.
+     *               If null, only a start tag will be printed
      * @param array<string, mixed> $options Additional HTML attributes of the DIV tag
-     * @return string The formatted DIV element
+      *
+      * @return string The formatted DIV element
      */
     public function div(?string $class = null, ?string $text = null, array $options = []): string
     {
-        if (!empty($class)) {
+        if (! empty($class)) {
             $options['class'] = $class;
         }
 
@@ -737,6 +749,7 @@ final class HtmlHelper extends Helper
      * @param string|null $text String content that will appear inside the div element.
      *   If null, only a start tag will be printed
      * @param array<string, mixed> $options Additional HTML attributes of the DIV tag, see above.
+     *
      * @return string The formatted tag element
      */
     //The tag builder respects HTML5 void elements (https://www.w3.org/TR/html5/syntax.html#void-elements) if no content is passed, and omits closing tags for those elements.
@@ -754,8 +767,8 @@ final class HtmlHelper extends Helper
         }
 
         return $this->templater()->format($tag, [
-            'attrs' => $this->templater()->formatAttributes($options),
-            'tag' => $name,
+            'attrs'   => $this->templater()->formatAttributes($options),
+            'tag'     => $name,
             'content' => $text,
         ]);
     }
@@ -770,12 +783,13 @@ final class HtmlHelper extends Helper
      * @param string|null $class CSS class name of the p element.
      * @param string|null $text String content that will appear inside the p element.
      * @param array<string, mixed> $options Additional HTML attributes of the P tag
+     *
      * @return string The formatted P element
      */
     // TODO : renommer la méthode en paragraph() ???
     public function para(?string $class, ?string $text, array $options = []): string
     {
-        if (!empty($options['escape'])) {
+        if (! empty($options['escape'])) {
             $text = e($text);
         }
         if ($class) {
@@ -787,7 +801,7 @@ final class HtmlHelper extends Helper
         }
 
         return $this->templater()->format($tag, [
-            'attrs' => $this->templater()->formatAttributes($options),
+            'attrs'   => $this->templater()->formatAttributes($options),
             'content' => $text,
         ]);
     }
@@ -804,19 +818,21 @@ final class HtmlHelper extends Helper
      * - `even` - Class to use for even rows.
      * - `odd` - Class to use for odd rows.
      *
-     * @param array $list Set of elements to list
-     * @param array<string, mixed> $options Options and additional HTML attributes of the list (ol/ul) tag.
+     * @param array                $list        Set of elements to list
+     * @param array<string, mixed> $options     Options and additional HTML attributes of the list (ol/ul) tag.
      * @param array<string, mixed> $itemOptions Options and additional HTML attributes of the list item (LI) tag.
+     *
      * @return string The nested list
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#creating-nested-lists
      */
     public function nestedList(array $list, array $options = [], array $itemOptions = []): string
     {
         $options += ['tag' => 'ul'];
-        $items = $this->_nestedListItem($list, $options, $itemOptions);
+        $items = $this->nestedListItem($list, $options, $itemOptions);
 
         return $this->templater()->format($options['tag'], [
-            'attrs' => $this->templater()->formatAttributes($options, ['tag']),
+            'attrs'   => $this->templater()->formatAttributes($options, ['tag']),
             'content' => $items,
         ]);
     }
@@ -824,13 +840,15 @@ final class HtmlHelper extends Helper
     /**
      * Internal function to build a nested list (UL/OL) out of an associative array.
      *
-     * @param array $items Set of elements to list.
-     * @param array<string, mixed> $options Additional HTML attributes of the list (ol/ul) tag.
+     * @param array                $items       Set of elements to list.
+     * @param array<string, mixed> $options     Additional HTML attributes of the list (ol/ul) tag.
      * @param array<string, mixed> $itemOptions Options and additional HTML attributes of the list item (LI) tag.
+     *
      * @return string The nested list element
+     *
      * @see \Cake\View\Helper\HtmlHelper::nestedList()
      */
-    protected function _nestedListItem(array $items, array $options, array $itemOptions): string
+    protected function nestedListItem(array $items, array $options, array $itemOptions): string
     {
         $out = '';
 
@@ -845,7 +863,7 @@ final class HtmlHelper extends Helper
                 $itemOptions['class'] = $itemOptions['odd'];
             }
             $out .= $this->templater()->format('li', [
-                'attrs' => $this->templater()->formatAttributes($itemOptions, ['even', 'odd']),
+                'attrs'   => $this->templater()->formatAttributes($itemOptions, ['even', 'odd']),
                 'content' => $item,
             ]);
             $index++;
@@ -853,43 +871,6 @@ final class HtmlHelper extends Helper
 
         return $out;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Builds CSS style data from an array of CSS properties
@@ -903,9 +884,11 @@ final class HtmlHelper extends Helper
      * 'margin:10px;padding:10px;'
      * ```
      *
-     * @param array<string, string> $data Style data array, keys will be used as property names, values as property values.
-     * @param bool $oneLine Whether the style block should be displayed on one line.
+     * @param array<string, string> $data    Style data array, keys will be used as property names, values as property values.
+     * @param bool                  $oneLine Whether the style block should be displayed on one line.
+     *
      * @return string CSS styling data
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#creating-css-programatically
      */
     public function style(array $data, bool $oneLine = true): string
@@ -921,46 +904,27 @@ final class HtmlHelper extends Helper
         return implode("\n", $out);
     }
 
-
     /**
      * Returns a charset META-tag.
      *
      * @param string|null $charset The character set to be used in the meta tag. If empty,
      *  The App.encoding value will be used. Example: "utf-8".
+     *
      * @return string A meta tag containing the specified character set.
+     *
      * @link https://book.cakephp.org/4/en/views/helpers/html.html#creating-charset-tags
      */
     public function charset(?string $charset = null): string
     {
         // TODO : faire un test en passant une chaine vide !!!! car il faut aussi gérer ce cas !!! et virer les 2 utilisation en empty() !!!
         if (empty($charset)) {
-            $charset = strtolower((string)config('http')->get('default_charset'));
+            $charset = strtolower((string) config('http')->get('default_charset'));
         }
 
         return $this->templater()->format('charset', [
-            'charset' => !empty($charset) ? $charset : 'utf-8',
+            'charset' => ! empty($charset) ? $charset : 'utf-8',
         ]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Returns the templater instance.
@@ -972,7 +936,6 @@ final class HtmlHelper extends Helper
     {
         return new StringTemplate($this->_defaultConfig['templates']);
     }
-
 
 /*
     public function templater_SAVE(): StringTemplate

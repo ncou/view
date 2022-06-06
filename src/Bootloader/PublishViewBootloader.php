@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Chiron\View\Bootloader;
 
-use Chiron\Core\Directories;
 use Chiron\Core\Container\Bootloader\AbstractBootloader;
+use Chiron\Core\Directories;
 use Chiron\Publisher\Publisher;
 
 final class PublishViewBootloader extends AbstractBootloader

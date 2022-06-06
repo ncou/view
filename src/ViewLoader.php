@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\View;
 
-use Chiron\View\Exception\ViewException;
-use Chiron\Filesystem\Filesystem;
-
 //https://github.com/spiral/views/blob/5d2123adc3cca2dc3e3c4ca0b9fe77d5ab2bf660/src/ViewLoader.php
 
 /**
@@ -20,8 +17,6 @@ class ViewLoader
 
     /**
      * Namespace path delimiter value.
-     *
-     * @var string
      */
     public const NAMESPACE_DELIMITER = '::';
 
@@ -44,7 +39,7 @@ class ViewLoader
      * @param array $paths
      * @param array $extensions
      */
-    public function __construct(array $paths = [], array $extensions = null)
+    public function __construct(array $paths = [], ?array $extensions = null)
     {
         if ($paths) {
             $this->setPaths($paths);
@@ -92,7 +87,7 @@ class ViewLoader
             throw new \InvalidArgumentException($this->errorCache[$name]);
         }
 
-        list($namespace, $shortname) = $this->parseName($name);
+        [$namespace, $shortname] = $this->parseName($name);
 
         if (! isset($this->paths[$namespace])) {
             $this->errorCache[$name] = sprintf('There are no registered paths for namespace "%s".', $namespace);
@@ -168,9 +163,7 @@ class ViewLoader
      */
     private function getPossibleViewFiles(string $name): array
     {
-        return array_map(function ($extension) use ($name) {
-            return str_replace('.', '/', $name) . '.' . $extension;
-        }, $this->extensions);
+        return array_map(fn ($extension) => str_replace('.', '/', $name) . '.' . $extension, $this->extensions);
     }
 
     /**
@@ -180,9 +173,9 @@ class ViewLoader
      *
      * @return array The array of paths where to look for templates
      */
-    public function getPaths($namespace = self::DEFAULT_NAMESPACE)
+    public function getPaths(string $namespace = self::DEFAULT_NAMESPACE): array
     {
-        return isset($this->paths[$namespace]) ? $this->paths[$namespace] : [];
+        return $this->paths[$namespace] ?? [];
     }
 
     /**
@@ -192,7 +185,7 @@ class ViewLoader
      *
      * @return array The array of defined namespaces
      */
-    public function getNamespaces()
+    public function getNamespaces(): array
     {
         return array_keys($this->paths);
     }
@@ -203,7 +196,7 @@ class ViewLoader
      * @param string|array $paths     A path or an array of paths where to look for templates
      * @param string       $namespace A path namespace
      */
-    public function setPaths($paths, $namespace = self::DEFAULT_NAMESPACE)
+    public function setPaths(string|array $paths, string $namespace = self::DEFAULT_NAMESPACE): void
     {
         if (! is_array($paths)) {
             $paths = [$paths];
@@ -222,7 +215,7 @@ class ViewLoader
      *
      * @throws Twig_Error_Loader
      */
-    public function addPath(string $path, string $namespace = self::DEFAULT_NAMESPACE)
+    public function addPath(string $path, string $namespace = self::DEFAULT_NAMESPACE): void
     {
         // invalidate the cache
         $this->cache = $this->errorCache = [];
@@ -265,13 +258,6 @@ class ViewLoader
         return strpos($name, static::NAMESPACE_DELIMITER) > 0;
     }
 
-
-
-
-
-
-
-
     // TODO : méthode temporaire !!!! en plus il faudrait que ca clone la classe avant de la retourner, et donc pas utiliser return $this !!!!
     public function withExtension(string $extension): self
     {
@@ -288,5 +274,4 @@ class ViewLoader
     {
         return $this->findTemplate($name);
     }
-
 }

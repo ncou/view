@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\View\Helper;
 
-use Chiron\ResponseCreator\ResponseCreator;
-use Chiron\View\TemplateRendererInterface;
-use Psr\Http\Message\ResponseInterface;
-
 // TODO : créer un helper dédié aux tableaux !!!! https://github.com/JelmerD/TableHelper/blob/master/src/View/Helper/TableHelper.php
 
 //https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/tests/TestCase/Routing/AssetTest.php
@@ -16,7 +12,6 @@ use Psr\Http\Message\ResponseInterface;
 // TODO : passer les protected en private car la classe est final !!!!
 final class UrlHelper
 {
-
     /**
      * Returns a URL based on provided parameters.
      *
@@ -30,17 +25,17 @@ final class UrlHelper
      *    an array of URL parameters. Using an array for URLs will allow you to leverage
      *    the reverse routing features of CakePHP.
      * @param array<string, mixed> $options Array of options.
+     *
      * @return string Full translated URL with base path.
      */
     // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!! https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
 
-    // TODO : Virer la possibilité de passer un tableau pour le paramétre $url !!!!
-    // TODO : pourquoi on peut passer null comme valeur au paramétre $url ????
+    // TODO : Mettre les 2 options sous forme de paramétre de méthode build(string $url, bool $fullBase = false, bool $escape = true) comme ca ca force le cast en booleen sur les valeurs manipulées, et depuis php8 on pourra appeller la méthode comme ca : $helper->build('/post/id', escape: true) ou $helper->build('/post/id', fullBase: true)
     public function build(string $url, array $options = []): string
     {
         $defaults = [
             'fullBase' => false,
-            'escape' => true,
+            'escape'   => true,
         ];
         $options += $defaults;
 
@@ -88,17 +83,21 @@ final class UrlHelper
      *   string or it can be an UriInterface instance.
      * @param bool $full If true, the full base URL will be prepended to the result.
      *   Default is false.
+     *
      * @return string Full translated URL with base path.
+     *
      * @throws \Cake\Core\Exception\CakeException When the route name is not found
      */
     // TODO : code temporaire, attention cela ne fonctionne pas si on a un lien du style http://xxxx donc il ne faut pas concaténer par défaut le http.basePath !!!!
     //https://github.com/cakephp/cakephp/blob/856741f34393bef25284b86da703e840071c4341/src/Routing/Router.php#L501
 
-    // TODO : Virer la possibilité de passer un tableau pour le paramétre $url !!!!
-    // TODO : pourquoi on peut passer null comme valeur au paramétre $url ????
     // TODO : corriger le phpdoc pour le paramétre $url !!!
     private function buildUrl(string $url, bool $full = false): string
     {
+        // TODO : pourquoi on test pas aussi 'data:' ??? ca devrait aussi être une plainString et donc on ne la modifie pas !!!! https://developer.mozilla.org/fr/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
+        // TODO : dans quel cas on peut avoir une url qui commence par un "#" ou un "?" je suppose que c'est un morceau d'url et qu'on manipule le segment au lieu de manipuler l'url ???
+        // TODO : externaliser ce controle dans une méthode private de la classe car on peut le mutualiser avec un controle nécessaire dans la méthode buildAsset
+        // TODO : le controle sur "#" et '?' ne semble pas utile !!!! virer ces 2 strpos !!!
         $plainString = (
             strpos($url, 'javascript:') === 0 ||
             strpos($url, 'mailto:') === 0 ||
@@ -134,7 +133,7 @@ final class UrlHelper
      * Depending on options passed provides full URL with domain name. Also calls
      * `Helper::assetTimestamp()` to add timestamp to local files.
      *
-     * @param string $path Path string.
+     * @param string               $path    Path string.
      * @param array<string, mixed> $options Options array. Possible keys:
      *   `fullBase` Return full URL with domain name
      *   `pathPrefix` Path prefix for relative URLs
@@ -143,13 +142,14 @@ final class UrlHelper
      *        Set to false to skip timestamp generation.
      *        Set to true to apply timestamps when debug is true. Set to 'force' to always
      *        enable timestamping regardless of debug value.
+     *
      * @return string Generated URL
      */
     public function image(string $path, array $options = []): string
     {
         $pathPrefix = 'assets/img/'; //Configure::read('App.imageBaseUrl');
 
-        return e($this->assetUrlInternal($path, $options + compact('pathPrefix')));
+        return $this->assetUrl($path, $options + compact('pathPrefix'));
     }
 
     /**
@@ -158,7 +158,7 @@ final class UrlHelper
      * Depending on options passed provides full URL with domain name. Also calls
      * `Helper::assetTimestamp()` to add timestamp to local files.
      *
-     * @param string $path Path string.
+     * @param string               $path    Path string.
      * @param array<string, mixed> $options Options array. Possible keys:
      *   `fullBase` Return full URL with domain name
      *   `pathPrefix` Path prefix for relative URLs
@@ -168,6 +168,7 @@ final class UrlHelper
      *        Set to false to skip timestamp generation.
      *        Set to true to apply timestamps when debug is true. Set to 'force' to always
      *        enable timestamping regardless of debug value.
+     *
      * @return string Generated URL
      */
     public function css(string $path, array $options = []): string
@@ -175,7 +176,7 @@ final class UrlHelper
         $pathPrefix = 'assets/css/'; //Configure::read('App.cssBaseUrl');
         $ext = '.css';
 
-        return e($this->assetUrlInternal($path, $options + compact('pathPrefix', 'ext')));
+        return $this->assetUrl($path, $options + compact('pathPrefix', 'ext'));
     }
 
     /**
@@ -184,7 +185,7 @@ final class UrlHelper
      * Depending on options passed provides full URL with domain name. Also calls
      * `Helper::assetTimestamp()` to add timestamp to local files.
      *
-     * @param string $path Path string.
+     * @param string               $path    Path string.
      * @param array<string, mixed> $options Options array. Possible keys:
      *   `fullBase` Return full URL with domain name
      *   `pathPrefix` Path prefix for relative URLs
@@ -194,6 +195,7 @@ final class UrlHelper
      *        Set to false to skip timestamp generation.
      *        Set to true to apply timestamps when debug is true. Set to 'force' to always
      *        enable timestamping regardless of debug value.
+     *
      * @return string Generated URL
      */
     public function script(string $path, array $options = []): string
@@ -201,9 +203,8 @@ final class UrlHelper
         $pathPrefix = 'assets/js/'; //Configure::read('App.jsBaseUrl');
         $ext = '.js';
 
-        return e($this->assetUrlInternal($path, $options + compact('pathPrefix', 'ext')));
+        return $this->assetUrl($path, $options + compact('pathPrefix', 'ext'));
     }
-
 
     /**
      * Generates URL for given asset file.
@@ -225,6 +226,7 @@ final class UrlHelper
      *
      * @param string $path Path string or URL array
      * @param array<string, mixed> $options Options array.
+     *
      * @return string Generated URL
      */
     // TODO : virer la notion de plugin
@@ -235,82 +237,49 @@ final class UrlHelper
 
     private function assetUrlInternal(string $path, array $options = []): string
     {
+        // TODO : conserver ce test ? car visiblement le if juste en dessous va aussi vérifier si il y a un début d'url avec la chaine "xxx:" comme par exemple "mailto:" donc ce controle est redondant avec celui juste en dessous !!!
+        // TODO : attention ce controle ne fonctionnera pas dans le cas ou on utilise "data:,Hello%2C%20World!" cad sans préciser le mimetype qui contient un slash "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ%3D%3D" cf https://developer.mozilla.org/fr/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
+
+        // TODO : externaliser le controle présent dans le buildUrl et réutiliser ce controle ici ???
         if (preg_match('/^data:[a-z]+\/[a-z]+;/', $path)) {
             return $path;
         }
 
+        // TODO : vérifier si strpos('//') === 0 pour gérer le cas du "Protocol-relative URL" qui n'ont pas de scheme !!!!
+        // TODO : utiliser str_contains et str_start_with =>     if (str_contains($path, '://') || str_starts_with($path, '//')) {
         if (strpos($path, '://') !== false || preg_match('/^[a-z]+:/i', $path)) {
-            //return ltrim(Router::url($path), '/');
-            //return ltrim($this->routerUrl($path), '/'); // TODO : je pense qu'il suffit de retourner le $path plutot que de passer par cette méthode routerUrl() !!!
             return $path;
         }
 
-/*
-        if (!array_key_exists('plugin', $options) || $options['plugin'] !== false) {
-            [$plugin, $path] = static::pluginSplit($path);
-        }
-*/
-
         // TODO : vérifier pourquoi on fait dans ce IF un controle sur la condition :    $path[0] !== '/'
-        if (!empty($options['pathPrefix']) && $path[0] !== '/') {
-            /*
-            $pathPrefix = $options['pathPrefix'];
-
-            $placeHolderVal = '';
-            if (!empty($options['theme'])) {
-                $placeHolderVal = static::inflectString($options['theme']) . '/';
-            } elseif (isset($plugin)) {
-                $placeHolderVal = static::inflectString($plugin) . '/';
-            }
-
-            $path = str_replace('{plugin}', $placeHolderVal, $pathPrefix) . $path; // TODO : en fait il suffit de faire un $path = $pathPrefix . $path;
-            */
-
+        if (! empty($options['pathPrefix']) && $path[0] !== '/') {
             $path = $options['pathPrefix'] . $path;
         }
 
         if (
-            !empty($options['ext']) &&
+            ! empty($options['ext']) &&
             strpos($path, '?') === false &&
             substr($path, -strlen($options['ext'])) !== $options['ext']
         ) {
             $path .= $options['ext'];
         }
 
+        // TODO : attention on va avoir un probléme si on utilise un $path du genre '//toto.com' car si le pathPrfix ne va pas etre ajouté, l'extension elle sera ajoutée et donc on aura un truc du genre "//toto.com.css" par exemple. Je pense que lors de la vérification du strpos('://') il faut aussi vérifier le strpos('//') === 0
+
         // Check again if path has protocol as `pathPrefix` could be for CDNs.
         if (preg_match('|^([a-z0-9]+:)?//|', $path)) {
-            //return $this->routerUrl($path); // TODO : je pense qu'il suffit de retourner le $path plutot que de passer par cette méthode routerUrl() !!!
             return $path;
-        }
-
-/*
-        if (isset($plugin)) {
-            $path = static::inflectString($plugin) . '/' . $path;
         }
 
         $optionTimestamp = null;
         if (array_key_exists('timestamp', $options)) {
             $optionTimestamp = $options['timestamp'];
         }
-*/
+        $path = static::assetTimestamp($path, $optionTimestamp); // TODO : ne pas utiliser une méthode statique !!!
 
-        /*
-        $webPath = static::assetTimestamp(
-            static::webroot($path, $options),
-            $optionTimestamp
-        );*/
+        $path = static::encodeUrl($path); // TODO : ne pas utiliser une méthode statique !!!
 
-        // TODO : code temporaire !!!!
-        //$webPath = '/' . $path;
-        $webPath = '' . $path;
-        if (strpos($webPath, '//') !== false) {
-            $webPath = str_replace('//', '/', $webPath);
-        }
-
-
-        $path = static::encodeUrl($webPath);
-
-        if (!empty($options['fullBase'])) {
+        if (! empty($options['fullBase'])) {
             $fullBaseUrl = is_string($options['fullBase'])
                 ? $options['fullBase']
                 : Router::fullBaseUrl();
@@ -321,13 +290,75 @@ final class UrlHelper
     }
 
     /**
+     * Adds a timestamp to a file based resource based on the value of `Asset.timestamp` in
+     * Configure. If Asset.timestamp is true and debug is true, or Asset.timestamp === 'force'
+     * a timestamp will be added.
+     *
+     * @param string $path The file path to timestamp, the path must be inside `App.wwwRoot` in Configure.
+     * @param string|bool|null $timestamp If set will overrule the value of `Asset.timestamp` in Configure.
+     * @return string Path with a timestamp added, or not.
+     */
+    public static function assetTimestamp(string $path, string|bool|null $timestamp = null): string
+    {
+        // Faire un str_contains !!!!
+        if (strpos($path, '?') !== false) {
+            return $path;
+        }
+
+        if ($timestamp === null) {
+            //$timestamp = Configure::read('Asset.timestamp');
+            $timestamp = 'force'; // TODO : test temporaire !!! à virer prochainement !!!
+        }
+        //$timestampEnabled = $timestamp === 'force' || ($timestamp === true && Configure::read('debug'));
+        $timestampEnabled = $timestamp === 'force'; // TODO : test temporaire !!! à virer prochainement !!!
+        if ($timestampEnabled) {
+
+            /*
+            $filepath = preg_replace(
+                '/^' . preg_quote(static::requestWebroot(), '/') . '/',
+                '',
+                urldecode($path)
+            );*/
+
+
+
+            // TODO : je pense qu'il faut récupérer le http.base_path [config('http')->get('base_path')] et éventuellement si il est vide mettre un '/' par défault !!!!
+            $basePath = config('http')->get('base_path');
+            $filepath = preg_replace(
+                '/^' . preg_quote($basePath, '/') . '/',
+                '',
+                urldecode($path)
+            );
+
+            //$webrootPath = Configure::read('App.wwwRoot') . str_replace('/', DIRECTORY_SEPARATOR, $filepath);
+            $webrootPath = directory('@public') . $filepath;
+
+
+
+            if (is_file($webrootPath)) {
+                return $path . '?' . filemtime($webrootPath);
+            }
+        }
+
+        return $path;
+    }
+
+    /**
      * Encodes URL parts using rawurlencode().
      *
      * @param string $url The URL to encode.
+     *
      * @return string
      */
+    // TODO : ne pas utiliser une méthode statique + passer la méthode en private car la classe est en mode "final" !!!!
     protected static function encodeUrl(string $url): string
     {
+        // TODO : exemple qui retourne un false lors du parse_url
+        /*
+            parse_url("http:///example.com");
+            parse_url("http://:80");
+            parse_url("http://user@:80");
+        */
         $path = parse_url($url, PHP_URL_PATH);
         if ($path === false) {
             $path = $url;
@@ -339,5 +370,4 @@ final class UrlHelper
 
         return str_replace($path, $encoded, $url);
     }
-
 }

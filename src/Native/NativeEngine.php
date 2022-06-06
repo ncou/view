@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Chiron\View\Native;
 
-use Chiron\View\ViewInterface;
 use Chiron\View\EngineInterface;
+use Chiron\View\ViewInterface;
 use Chiron\View\ViewLoader;
-use Chiron\View\ViewContext;
 
 final class NativeEngine implements EngineInterface
 {
@@ -46,5 +45,4 @@ final class NativeEngine implements EngineInterface
         // TODO : passer le viewcontext ???
         return new NativeView($this->getLoader()->load($path), $parameters);
     }
-
 }

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\View;
 
-use Chiron\View\ViewLoader;
-use Chiron\View\ViewInterface;
-
 interface EngineInterface
 {
     /**
@@ -25,7 +22,6 @@ interface EngineInterface
      * Compile (and reset cache) for the given view path in a provided context. This method must be
      * called each time view must be re-compiled.
      *
-     *
      * @throws EngineException
      * @throws LoaderException
      */
@@ -41,7 +37,6 @@ interface EngineInterface
      * must attempt to use existed cache if such presented (or compile view directly if cache has
      * been disabled).
      *
-     *
      * @throws EngineException
      * @throws LoaderException
      */
@@ -49,4 +44,3 @@ interface EngineInterface
     // TODO : mettre à jour la phpdoc
     public function getView(string $path, array $parameters = []): ViewInterface;
 }
-

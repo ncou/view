@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Chiron\View\Tests\Helper;
 
-use Chiron\View\TemplatePath;
 use PHPUnit\Framework\TestCase;
-use Chiron\View\StringTemplate;
-use Chiron\View\Helper\HtmlHelper;
 
 abstract class AbstractHelperTestCase extends TestCase
 {
@@ -50,9 +47,10 @@ abstract class AbstractHelperTestCase extends TestCase
      * Important: This function is very forgiving about whitespace and also accepts any
      * permutation of attribute order. It will also allow whitespace between specified tags.
      *
-     * @param array $expected An array, see above
-     * @param string $string An HTML/XHTML/XML string
-     * @param bool $fullDebug Whether more verbose output should be used.
+     * @param array  $expected  An array, see above
+     * @param string $string    An HTML/XHTML/XML string
+     * @param bool   $fullDebug Whether more verbose output should be used.
+     *
      * @return bool
      */
     public function assertHtml(array $expected, string $string, bool $fullDebug = false): bool
@@ -60,7 +58,7 @@ abstract class AbstractHelperTestCase extends TestCase
         $regex = [];
         $normalized = [];
         foreach ($expected as $key => $val) {
-            if (!is_numeric($key)) {
+            if (! is_numeric($key)) {
                 $normalized[] = [$key => $val];
             } else {
                 $normalized[] = $val;
@@ -68,8 +66,8 @@ abstract class AbstractHelperTestCase extends TestCase
         }
         $i = 0;
         foreach ($normalized as $tags) {
-            if (!is_array($tags)) {
-                $tags = (string)$tags;
+            if (! is_array($tags)) {
+                $tags = (string) $tags;
             }
             $i++;
             if (is_string($tags) && $tags[0] === '<') {
@@ -89,9 +87,10 @@ abstract class AbstractHelperTestCase extends TestCase
                         sprintf('%s\s*<[\s]*\/[\s]*%s[\s]*>[\n\r]*', $prefix[1], substr($tags, strlen($match[0]))),
                         $i,
                     ];
+
                     continue;
                 }
-                if (!empty($tags) && preg_match('/^preg\:\/(.+)\/$/i', $tags, $matches)) {
+                if (! empty($tags) && preg_match('/^preg\:\/(.+)\/$/i', $tags, $matches)) {
                     $tags = $matches[1];
                     $type = 'Regex matches';
                 } else {
@@ -103,6 +102,7 @@ abstract class AbstractHelperTestCase extends TestCase
                     $tags,
                     $i,
                 ];
+
                 continue;
             }
             foreach ($tags as $tag => $attributes) {
@@ -119,19 +119,20 @@ abstract class AbstractHelperTestCase extends TestCase
                 $explanations = [];
                 $i = 1;
                 foreach ($attributes as $attr => $val) {
-                    if (is_numeric($attr) && preg_match('/^preg\:\/(.+)\/$/i', (string)$val, $matches)) {
+                    if (is_numeric($attr) && preg_match('/^preg\:\/(.+)\/$/i', (string) $val, $matches)) {
                         $attrs[] = $matches[1];
                         $explanations[] = sprintf('Regex "%s" matches', $matches[1]);
+
                         continue;
                     }
-                    $val = (string)$val;
+                    $val = (string) $val;
 
                     $quotes = '["\']';
                     if (is_numeric($attr)) {
                         $attr = $val;
                         $val = '.+?';
                         $explanations[] = sprintf('Attribute "%s" present', $attr);
-                    } elseif (!empty($val) && preg_match('/^preg\:\/(.+)\/$/i', $val, $matches)) {
+                    } elseif (! empty($val) && preg_match('/^preg\:\/(.+)\/$/i', $val, $matches)) {
                         $val = str_replace(
                             ['.*', '.+'],
                             ['.*?', '.+?'],
@@ -150,7 +151,7 @@ abstract class AbstractHelperTestCase extends TestCase
                 if ($attrs) {
                     $regex[] = [
                         'explains' => $explanations,
-                        'attrs' => $attrs,
+                        'attrs'    => $attrs,
                     ];
                 }
                 /** @psalm-suppress PossiblyFalseArgument */
@@ -172,6 +173,7 @@ abstract class AbstractHelperTestCase extends TestCase
                     debug($string, true);
                     debug($regex, true);
                 }
+
                 continue;
             }
 
@@ -179,15 +181,16 @@ abstract class AbstractHelperTestCase extends TestCase
             /** @psalm-suppress PossiblyUndefinedArrayOffset */
             [$description, $expressions, $itemNum] = $assertion;
             $expression = '';
-            foreach ((array)$expressions as $expression) {
+            foreach ((array) $expressions as $expression) {
                 $expression = sprintf('/^%s/s', $expression);
                 if (preg_match($expression, $string, $match)) {
                     $matches = true;
                     $string = substr($string, strlen($match[0]));
+
                     break;
                 }
             }
-            if (!$matches) {
+            if (! $matches) {
                 if ($fullDebug === true) {
                     debug($string);
                     debug($regex);
@@ -211,12 +214,13 @@ abstract class AbstractHelperTestCase extends TestCase
      * Check the attributes as part of an assertTags() check.
      *
      * @param array<string, mixed> $assertions Assertions to run.
-     * @param string $string The HTML string to check.
-     * @param bool $fullDebug Whether more verbose output should be used.
-     * @param array|string $regex Full regexp from `assertHtml`
+     * @param string               $string     The HTML string to check.
+     * @param bool                 $fullDebug  Whether more verbose output should be used.
+     * @param array|string         $regex      Full regexp from `assertHtml`
+     *
      * @return string|false
      */
-    protected function assertAttributes(array $assertions, string $string, bool $fullDebug = false, $regex = '')
+    protected function assertAttributes(array $assertions, string $string, bool $fullDebug = false, array|string $regex = ''): string|false
     {
         $asserts = $assertions['attrs'];
         $explains = $assertions['explains'];
@@ -229,6 +233,7 @@ abstract class AbstractHelperTestCase extends TestCase
                     $string = substr($string, strlen($match[0]));
                     array_splice($asserts, $j, 1);
                     array_splice($explains, $j, 1);
+
                     break;
                 }
             }

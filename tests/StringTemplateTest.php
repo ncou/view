@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Chiron\View\Tests;
 
-use Chiron\View\TemplatePath;
-use PHPUnit\Framework\TestCase;
 use Chiron\View\StringTemplate;
+use PHPUnit\Framework\TestCase;
 
 class StringTemplateTest extends TestCase
 {
@@ -16,8 +15,8 @@ class StringTemplateTest extends TestCase
     public function testFormat(): void
     {
         $templates = [
-            'link' => '<a href="{{url}}">{{text}}</a>',
-            'text' => '{{text}}',
+            'link'   => '<a href="{{url}}">{{text}}</a>',
+            'text'   => '{{text}}',
             'custom' => '<custom {{standard}} v1="{{var1}}" v2="{{var2}}" />',
         ];
 
@@ -30,13 +29,13 @@ class StringTemplateTest extends TestCase
         $this->assertSame('', $result);
 
         $result = $template->format('link', [
-            'url' => '/',
+            'url'  => '/',
             'text' => 'example',
         ]);
         $this->assertSame('<a href="/">example</a>', $result);
 
         $result = $template->format('custom', [
-            'standard' => 'default',
+            'standard'     => 'default',
             'templateVars' => ['var1' => 'foo'],
         ]);
         $this->assertSame('<custom default v1="foo" v2="" />', $result);
@@ -67,13 +66,13 @@ class StringTemplateTest extends TestCase
         $template = new StringTemplate($templates);
 
         $result = $template->format('link', [
-            'url' => '/',
+            'url'  => '/',
             'text' => ['example', 'text'],
         ]);
         $this->assertSame('<a href="/">exampletext</a>', $result);
 
         $result = $template->format('link', [
-            'url' => '/',
+            'url'  => '/',
             'text' => ['key' => 'example', 'text'],
         ]);
         $this->assertSame('<a href="/">exampletext</a>', $result);

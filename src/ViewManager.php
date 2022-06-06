@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace Chiron\View;
 
-use Chiron\View\Exception\ViewException;
-use Chiron\View\Native\NativeEngine;
-use Chiron\View\EngineInterface;
-use Chiron\View\Config\ViewConfig;
-use Chiron\Container\SingletonInterface;
 use Chiron\Container\Container;
+use Chiron\Container\SingletonInterface;
+use Chiron\View\Config\ViewConfig;
+use Chiron\View\Exception\ViewException;
+use Chiron\View\Helper\HtmlHelper;
+use Chiron\View\Helper\UrlHelper;
+use Chiron\View\Native\NativeEngine;
+
+// TODO : utiliser le nom du controller pour préfixer le répertoire des vues ????
+//https://github.com/yiisoft/yii-view/blob/406384e8a54c98e6aeb519356cb2108dff646134/src/ViewRenderer.php#L531
+// TODO : auto render si il n'y a pas de réponse retournée, je pense que nous on devrait faire un event lors du call du handler pour transformer le retour de null en une response !!!!
+//https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/src/Controller/Controller.php#L545
+
 
 //https://github.com/spiral/views/blob/5d2123adc3cca2dc3e3c4ca0b9fe77d5ab2bf660/src/ViewManager.php
 
@@ -22,12 +29,15 @@ class ViewManager implements SingletonInterface
     /** @var EngineInterface[] */
     private array $engines = [];
     /** @var array<string, object> */
-    private array $dependencies = []; // TODO : attention il est possible que dans le fichier de config on ait autre chose qu'un object par exemple "$dependencies['csrf' => true]" et ca doit pouvoir fonctionner !!!!
+    private array $dependencies = []; // TODO : attention il est possible que dans le fichier de config on ait autre chose qu'un "object" par exemple "$dependencies['csrf' => true]" et ca doit pouvoir fonctionner !!!! modifier la phpdoc pour cette variable.
+    private array $helpers = [
+        'Url'  => UrlHelper::class,
+        'Html' => HtmlHelper::class,
+    ];
 
     // TODO : ajouter une méthode pour ajouter un namespace+path associé
     public function __construct(ViewConfig $config, Container $container)
     {
-
 /*
         // add template paths
         foreach ($config->getPaths() as $namespace => $paths) {
@@ -48,7 +58,6 @@ class ViewManager implements SingletonInterface
             // TODO : attention il est possible que dans le fichier de config on ait autre chose qu'un object par exemple "$dependencies['csrf' => true]" et ca doit pouvoir fonctionner !!!!
         }
 
-
         $namespaces = ['default' => [directory('@views')]]; // TODO : aller chercher ces informations dans le fichier de config !!!
         $namespaces = [directory('@views')]; // TODO : aller chercher ces informations dans le fichier de config !!!
 
@@ -66,9 +75,7 @@ class ViewManager implements SingletonInterface
         $this->engines[] = $engine->withLoader($this->loader);
 
         // TODO : utilité du sort() sur les extensions ????
-        uasort($this->engines, static function (EngineInterface $a, EngineInterface $b) {
-            return strcmp($a->getLoader()->getExtension(), $b->getLoader()->getExtension());
-        });
+        uasort($this->engines, static fn (EngineInterface $a, EngineInterface $b) => strcmp($a->getLoader()->getExtension(), $b->getLoader()->getExtension()));
 
         $this->engines = array_values($this->engines);
     }
@@ -89,6 +96,9 @@ class ViewManager implements SingletonInterface
     // TODO : utilité de cette fonction ???
     public function render(string $template, array $parameters = []): string
     {
+        // TODO : prévoir de lever des events BeforeRender et AfterRender ????
+        //https://github.com/cakephp/cakephp/blob/101b179920a7b8ab68866554539d65c64c6bfd8d/src/View/View.php#L768
+        //https://github.com/yiisoft/view/blob/c81f3b910528dcefa3f02ef8a118da4fe16df218/src/ViewTrait.php#L440
         return $this->get($template, $parameters)->render();
     }
 
@@ -97,7 +107,6 @@ class ViewManager implements SingletonInterface
      *
      * @throws ViewException
      */
-    // TODO : il faudrait initialiser le assign('title') ici et ensuite retourner la view !!!!
     // TODO : renommer en getView() ???
     public function get(string $template): ViewInterface
     {
@@ -112,7 +121,16 @@ class ViewManager implements SingletonInterface
         //https://github.com/cakephp/cakephp/blob/5.x/src/View/View.php#L829
         //https://github.com/cakephp/cakephp/blob/876a11e172b0b33710b1fbddd94de6d1618d352b/src/Utility/Inflector.php#L427
 
+        foreach ($this->helpers as $alias => $class) {
+            $view->helper($alias, $class);
+        }
+
         return $view;
+    }
+
+    public function addHelper(string $alias, string $class): void
+    {
+        $this->helpers[$alias] = $class;
     }
 
     /**
@@ -128,5 +146,4 @@ class ViewManager implements SingletonInterface
 
         throw new ViewException("Unable to detect view engine for `{$template}`."); // TODO : utiliser un sprintf
     }
-
 }

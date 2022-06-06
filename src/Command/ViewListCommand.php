@@ -4,27 +4,17 @@ declare(strict_types=1);
 
 namespace Chiron\View\Command;
 
-use Chiron\Filesystem\Filesystem;
 use Chiron\Core\Command\AbstractCommand;
-use Symfony\Component\Console\Input\InputOption;
-
-use InvalidArgumentException;
-use RuntimeException;
-use LogicException;
-
-use Twig\Environment;
-use Twig\Error\Error as TwigErrorException;
-use Twig\Loader\ArrayLoader;
-use Twig\Source;
-use Twig\Loader\FilesystemLoader;
+use Chiron\Filesystem\Filesystem;
 use Chiron\View\TemplateRendererInterface;
+use Twig\Environment;
 
 // TODO : virer les références à TWIG !!!!
 
 final class ViewListCommand extends AbstractCommand
 {
     /** @var \Twig\Environment */
-    private $twig;
+    private Environment $twig;
 
     protected static $defaultName = 'view:list';
 
@@ -51,10 +41,8 @@ final class ViewListCommand extends AbstractCommand
 
     private function getPaths(TemplateRendererInterface $renderer): array
     {
-
         $loaderPaths = [];
         foreach ($renderer->getPaths() as $templatePath) {
-
             $path = $templatePath->getPath();
             $namespace = $templatePath->getNamespace();
 
@@ -76,12 +64,12 @@ final class ViewListCommand extends AbstractCommand
         $prevHasSeparator = false;
 
         foreach ($loaderPaths as $namespace => $paths) {
-            if (!$firstNamespace && !$prevHasSeparator && count($paths) > 1) {
+            if (! $firstNamespace && ! $prevHasSeparator && count($paths) > 1) {
                 $rows[] = ['', ''];
             }
             $firstNamespace = false;
             foreach ($paths as $path) {
-                $rows[] = [$namespace, $path.DIRECTORY_SEPARATOR];
+                $rows[] = [$namespace, $path . DIRECTORY_SEPARATOR];
                 $namespace = '';
             }
             if (count($paths) > 1) {

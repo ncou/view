@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Chiron\View\Bootloader;
 
-use Chiron\Core\Directories;
-use Chiron\Core\Container\Bootloader\AbstractBootloader;
 use Chiron\Console\Console;
+use Chiron\Core\Container\Bootloader\AbstractBootloader;
 use Chiron\View\Command\ViewListCommand;
 
 final class ViewCommandBootloader extends AbstractBootloader
