@@ -243,9 +243,9 @@ final class HtmlHelper //extends Helper
             $title = htmlentities($title, ENT_QUOTES, $escapeTitle);
         }
 
+        $templater = $this->templater();
         // TODO : virer la notion de confirm !!!
 /*
-        $templater = $this->templater();
         $confirmMessage = null;
         if (isset($options['confirm'])) {
             $confirmMessage = $options['confirm'];
@@ -343,7 +343,7 @@ final class HtmlHelper //extends Helper
             return null;
         }
 
-        $url = $this->Url->assetUrl($path, $options);
+        $url = $this->Url->css($path, $options);
         $options = array_diff_key($options, ['fullBase' => null, 'pathPrefix' => null]);
 
         if ($options['once'] && isset($this->_includedAssets[__METHOD__][$path])) {
@@ -446,7 +446,7 @@ final class HtmlHelper //extends Helper
             return null;
         }
 
-        $url = $this->Url->assetUrl($url, $options);
+        $url = $this->Url->script($url, $options);
         $options = array_diff_key($options, ['fullBase' => null, 'pathPrefix' => null]);
 
         if ($options['once'] && isset($this->_includedAssets[__METHOD__][$url])) {
@@ -507,7 +507,7 @@ final class HtmlHelper //extends Helper
     {
         // TODO : virer le cas ou on passe un tableau pour le path !!!!
         if (is_string($path)) {
-            $path = $this->Url->assetUrl($path, $options);
+            $path = $this->Url->image($path, $options);
         } else {
             $path = $this->Url->build($path, $options);
         }

@@ -251,7 +251,6 @@ final class UrlHelper
             return $path;
         }
 
-        // TODO : vérifier pourquoi on fait dans ce IF un controle sur la condition :    $path[0] !== '/'
         if (! empty($options['pathPrefix']) && $path[0] !== '/') {
             $path = $options['pathPrefix'] . $path;
         }
@@ -264,7 +263,7 @@ final class UrlHelper
             $path .= $options['ext'];
         }
 
-        // TODO : attention on va avoir un probléme si on utilise un $path du genre '//toto.com' car si le pathPrfix ne va pas etre ajouté, l'extension elle sera ajoutée et donc on aura un truc du genre "//toto.com.css" par exemple. Je pense que lors de la vérification du strpos('://') il faut aussi vérifier le strpos('//') === 0
+        // TODO : attention on va avoir un probléme si on utilise un $path du genre '//toto.com' car si le pathPrefix ne va pas etre ajouté, l'extension elle sera ajoutée et donc on aura un truc du genre "//toto.com.css" par exemple. Je pense que lors de la vérification du strpos('://') il faut aussi vérifier le strpos('//') === 0
 
         // Check again if path has protocol as `pathPrefix` could be for CDNs.
         if (preg_match('|^([a-z0-9]+:)?//|', $path)) {
@@ -275,9 +274,15 @@ final class UrlHelper
         if (array_key_exists('timestamp', $options)) {
             $optionTimestamp = $options['timestamp'];
         }
-        $path = static::assetTimestamp($path, $optionTimestamp); // TODO : ne pas utiliser une méthode statique !!!
 
-        $path = static::encodeUrl($path); // TODO : ne pas utiliser une méthode statique !!!
+        $webPath = config('http')->get('base_path') . $path;
+        if (strpos($webPath, '//') !== false) {
+            return str_replace('//', '/', $webPath);
+        }
+
+        $webPath = static::assetTimestamp($webPath, $optionTimestamp); // TODO : ne pas utiliser une méthode statique !!!
+
+        $path = static::encodeUrl($webPath); // TODO : ne pas utiliser une méthode statique !!!
 
         if (! empty($options['fullBase'])) {
             $fullBaseUrl = is_string($options['fullBase'])
