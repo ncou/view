@@ -5,9 +5,32 @@ declare(strict_types=1);
 namespace Chiron\View\Tests\Helper;
 
 use PHPUnit\Framework\TestCase;
+use Chiron\Config\Configure;
+use Chiron\Container\Container;
+use Chiron\Config\Loader\ArrayLoader;
+use Chiron\Core\Directories;
+
+//https://github.com/cakephp/cakephp/blob/5.x/src/TestSuite/TestCase.php
 
 abstract class AbstractHelperTestCase extends TestCase
 {
+    /**
+     * setUp method
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $container = new Container();
+        $loader = new ArrayLoader(['http' => ['base_path' => '/']]);
+        $configure = new Configure($loader);
+
+        $container->bind(Configure::class, $configure);
+
+        $directories = new Directories(['@public' => dirname(__DIR__)]);
+        $container->bind(Directories::class, $directories);
+    }
+
     /**
      * Asserts HTML tags.
      *
@@ -49,11 +72,10 @@ abstract class AbstractHelperTestCase extends TestCase
      *
      * @param array  $expected  An array, see above
      * @param string $string    An HTML/XHTML/XML string
-     * @param bool   $fullDebug Whether more verbose output should be used.
      *
      * @return bool
      */
-    public function assertHtml(array $expected, string $string, bool $fullDebug = false): bool
+    public function assertHtml(array $expected, string $string): bool
     {
         $regex = [];
         $normalized = [];
@@ -168,11 +190,7 @@ abstract class AbstractHelperTestCase extends TestCase
         foreach ($regex as $i => $assertion) {
             $matches = false;
             if (isset($assertion['attrs'])) {
-                $string = $this->assertAttributes($assertion, $string, $fullDebug, $regex);
-                if ($fullDebug === true && $string === false) {
-                    debug($string, true);
-                    debug($regex, true);
-                }
+                $string = $this->assertAttributes($assertion, $string, $regex);
 
                 continue;
             }
@@ -191,10 +209,6 @@ abstract class AbstractHelperTestCase extends TestCase
                 }
             }
             if (! $matches) {
-                if ($fullDebug === true) {
-                    debug($string);
-                    debug($regex);
-                }
                 $this->assertMatchesRegularExpression(
                     $expression,
                     $string,
@@ -211,16 +225,16 @@ abstract class AbstractHelperTestCase extends TestCase
     }
 
     /**
-     * Check the attributes as part of an assertTags() check.
+     * Check the attributes as part of an assertHtml() check.
      *
      * @param array<string, mixed> $assertions Assertions to run.
      * @param string               $string     The HTML string to check.
-     * @param bool                 $fullDebug  Whether more verbose output should be used.
      * @param array|string         $regex      Full regexp from `assertHtml`
      *
      * @return string|false
      */
-    protected function assertAttributes(array $assertions, string $string, bool $fullDebug = false, array|string $regex = ''): string|false
+    // TODO passer la méthode en private !!!
+    protected function assertAttributes(array $assertions, string $string, array|string $regex = ''): string|false
     {
         $asserts = $assertions['attrs'];
         $explains = $assertions['explains'];
@@ -238,10 +252,6 @@ abstract class AbstractHelperTestCase extends TestCase
                 }
             }
             if ($matches === false) {
-                if ($fullDebug === true) {
-                    debug($string);
-                    debug($regex);
-                }
                 $this->assertTrue(false, 'Attribute did not match. Was expecting ' . $explains[$j]);
             }
             $len = count($asserts);

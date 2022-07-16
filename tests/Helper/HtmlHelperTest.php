@@ -636,20 +636,20 @@ class HtmlHelperTest extends AbstractHelperTestCase
     public function testMedia(): void
     {
         $result = $this->Html->media('video.webm');
-        $expected = ['video' => ['src' => 'files/video.webm'], '/video'];
+        $expected = ['video' => ['src' => '/files/video.webm'], '/video'];
 
         $this->assertHtml($expected, $result);
 
         $result = $this->Html->media('video.webm', [
             'text' => 'Your browser does not support the HTML5 Video element.',
         ]);
-        $expected = ['video' => ['src' => 'files/video.webm'], 'Your browser does not support the HTML5 Video element.', '/video'];
+        $expected = ['video' => ['src' => '/files/video.webm'], 'Your browser does not support the HTML5 Video element.', '/video'];
         $this->assertHtml($expected, $result);
 
         $result = $this->Html->media('video.webm', ['autoload', 'muted' => 'muted']);
         $expected = [
             'video' => [
-                'src'      => 'files/video.webm',
+                'src'      => '/files/video.webm',
                 'autoload' => 'autoload',
                 'muted'    => 'muted',
             ],
@@ -663,20 +663,20 @@ class HtmlHelperTest extends AbstractHelperTestCase
         );
         $expected = [
             //'video' => ['poster' => Configure::read('App.imageBaseUrl') . 'poster.jpg'], // TODO : à corriger !!!
-            'video' => ['poster' => '' . 'poster.jpg'],
-            ['source' => ['src' => 'videos/video.webm', 'type' => 'video/webm']],
-            ['source' => ['src' => 'videos/video.ogv', 'type' => 'video/ogg; codecs=&#039;theora, vorbis&#039;']],
+            'video' => ['poster' => '' . '/poster.jpg'],
+            ['source' => ['src' => '/videos/video.webm', 'type' => 'video/webm']],
+            ['source' => ['src' => '/videos/video.ogv', 'type' => 'video/ogg; codecs=&#039;theora, vorbis&#039;']],
             'Your browser does not support the HTML5 Video element.',
             '/video',
         ];
         $this->assertHtml($expected, $result);
 
         $result = $this->Html->media('video.ogv', ['tag' => 'video']);
-        $expected = ['video' => ['src' => 'files/video.ogv'], '/video'];
+        $expected = ['video' => ['src' => '/files/video.ogv'], '/video'];
         $this->assertHtml($expected, $result);
 
         $result = $this->Html->media('audio.mp3');
-        $expected = ['audio' => ['src' => 'files/audio.mp3'], '/audio'];
+        $expected = ['audio' => ['src' => '/files/audio.mp3'], '/audio'];
         $this->assertHtml($expected, $result);
 
         $result = $this->Html->media(
@@ -684,15 +684,16 @@ class HtmlHelperTest extends AbstractHelperTestCase
         );
         $expected = [
             '<video',
-            ['source' => ['src' => 'files/video.mov', 'type' => 'video/mp4']],
-            ['source' => ['src' => 'files/video.webm', 'type' => 'video/webm']],
+            ['source' => ['src' => '/files/video.mov', 'type' => 'video/mp4']],
+            ['source' => ['src' => '/files/video.webm', 'type' => 'video/webm']],
             '/video',
         ];
         $this->assertHtml($expected, $result);
 
-        $result = $this->Html->media(null, ['src' => 'video.webm']);
+        // TODO : faire le test et passer un tableau vide comme premier paramétre !!!! car cela va permettre de vérifier que la méthode meta() ne plante pas !!!
+        $result = $this->Html->media('', ['src' => 'video.webm']);
         $expected = [
-            'video' => ['src' => 'files/video.webm'],
+            'video' => ['src' => '/files/video.webm'],
             '/video',
         ];
         $this->assertHtml($expected, $result);

@@ -9,6 +9,15 @@ use Chiron\View\Traits\HelperAccessorTrait;
 
 // TODO : créer un helper dédié aux tableaux !!!! https://github.com/JelmerD/TableHelper/blob/master/src/View/Helper/TableHelper.php
 
+// TODO : externaliser tout ce qui touche au meta dans un helper dédié (meta/charset/title...etc) https://github.com/dereuromark/cakephp-meta/blob/master/src/View/Helper/MetaHelper.php
+
+// TODO : mieux gérer les mime types
+// https://github.com/rinvex/laravel-support/blob/master/src/Support/helpers.php#L14
+// https://github.com/symfony/http-foundation/blob/3.0/File/MimeType/MimeTypeExtensionGuesser.php
+// https://github.com/symfony/mime/blob/6.1/Resources/bin/update_mime_types.php
+
+// TODO : virer l'utilisation de la fonction empty() dans cette classe !!!
+
 // TODO : passer les protected en private car la classe est final !!!!
 final class HtmlHelper //extends Helper
 {
@@ -26,7 +35,7 @@ final class HtmlHelper //extends Helper
      *
      * @var array<string, array>
      */
-    protected array $_includedAssets = [];
+    protected array $_includedAssets = []; // TODO : à virer !!!
 
     /**
      * Default config for this class
@@ -645,7 +654,7 @@ final class HtmlHelper //extends Helper
 
         if ($tag === null) {
             if (is_array($path)) {
-                $mimeType = $path[0]['type'];
+                $mimeType = $path[0]['type']; // TODO : attention car l'utilisateur pourrait passer $path sous forme de tableau vide et dans ce cas l'index 0 n'existera pas !!!!
             } else {
                 /** @var string $mimeType */
                 $mimeType = $this->getMimeType(pathinfo($path, PATHINFO_EXTENSION));

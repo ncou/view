@@ -32,18 +32,11 @@ class UrlHelperTest extends AbstractHelperTestCase
      */
     public function testBuildUrlConversion(): void
     {
-        //$this->builder->connect('/:controller/:action/*');
-
         $result = $this->Helper->build('/controller/action/1');
         $this->assertSame('/controller/action/1', $result);
 
         $result = $this->Helper->build('/controller/action/1?one=1&two=2');
         $this->assertSame('/controller/action/1?one=1&amp;two=2', $result);
-
-/*
-        $result = $this->Helper->build(['controller' => 'Posts', 'action' => 'index', '?' => ['page' => '1" onclick="alert(\'XSS\');"']]);
-        $this->assertSame('/posts?page=1%22+onclick%3D%22alert%28%27XSS%27%29%3B%22', $result);
-*/
 
         $result = $this->Helper->build('/controller/action/1/param:this+one+more');
         $this->assertSame('/controller/action/1/param:this+one+more', $result);
@@ -53,39 +46,12 @@ class UrlHelperTest extends AbstractHelperTestCase
 
         $result = $this->Helper->build('/controller/action/1/param:%7Baround%20here%7D%5Bthings%5D%5Bare%5D%24%24');
         $this->assertSame('/controller/action/1/param:%7Baround%20here%7D%5Bthings%5D%5Bare%5D%24%24', $result);
-
-/*
-        $result = $this->Helper->build([
-            'controller' => 'Posts', 'action' => 'index',
-            '?' => ['param' => '%7Baround%20here%7D%5Bthings%5D%5Bare%5D%24%24'],
-        ]);
-        $this->assertSame('/posts?param=%257Baround%2520here%257D%255Bthings%255D%255Bare%255D%2524%2524', $result);
-
-        $result = $this->Helper->build([
-            'controller' => 'Posts', 'action' => 'index',
-            '?' => ['one' => 'value', 'two' => 'value', 'three' => 'purple', 'page' => '1'],
-        ]);
-        $this->assertSame('/posts?one=value&amp;two=value&amp;three=purple&amp;page=1', $result);
-*/
     }
 
     public function testBuildUrlConversionUnescaped(): void
     {
         $result = $this->Helper->build('/controller/action/1?one=1&two=2', ['escape' => false]);
         $this->assertSame('/controller/action/1?one=1&two=2', $result);
-
-/*
-        $result = $this->Helper->build([
-            'controller' => 'Posts',
-            'action' => 'view',
-            '?' => [
-                'k' => 'v',
-                '1' => '2',
-                'param' => '%7Baround%20here%7D%5Bthings%5D%5Bare%5D%24%24',
-            ],
-        ], ['escape' => false]);
-        $this->assertSame('/posts/view?k=v&1=2&param=%257Baround%2520here%257D%255Bthings%255D%255Bare%255D%2524%2524', $result);
-        */
     }
 
     /**
@@ -99,7 +65,7 @@ class UrlHelperTest extends AbstractHelperTestCase
         $this->assertSame(Router::fullBaseUrl() . '/js/post.js', $result);
 */
         $result = $this->Helper->assetUrl('foo.jpg', ['pathPrefix' => 'img/']);
-        $this->assertSame('img/foo.jpg', $result);
+        $this->assertSame('/img/foo.jpg', $result);
 
 /*
         $result = $this->Helper->assetUrl('foo.jpg', ['fullBase' => true]);
@@ -107,19 +73,19 @@ class UrlHelperTest extends AbstractHelperTestCase
 */
 
         $result = $this->Helper->assetUrl('style', ['ext' => '.css']);
-        $this->assertSame('style.css', $result);
+        $this->assertSame('/style.css', $result);
 
         $result = $this->Helper->assetUrl('dir/sub dir/my image', ['ext' => '.jpg']);
-        $this->assertSame('dir/sub%20dir/my%20image.jpg', $result);
+        $this->assertSame('/dir/sub%20dir/my%20image.jpg', $result);
 
         $result = $this->Helper->assetUrl('foo.jpg?one=two&three=four');
-        $this->assertSame('foo.jpg?one=two&amp;three=four', $result);
+        $this->assertSame('/foo.jpg?one=two&amp;three=four', $result);
 
         $result = $this->Helper->assetUrl('x:"><script>alert(1)</script>');
         $this->assertSame('x:&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;', $result);
 
         $result = $this->Helper->assetUrl('dir/big+tall/image', ['ext' => '.jpg']);
-        $this->assertSame('dir/big%2Btall/image.jpg', $result);
+        $this->assertSame('/dir/big%2Btall/image.jpg', $result);
     }
 
     /**
@@ -181,7 +147,7 @@ class UrlHelperTest extends AbstractHelperTestCase
     public function testImage(): void
     {
         $result = $this->Helper->image('foo.jpg');
-        $this->assertSame('assets/img/foo.jpg', $result);
+        $this->assertSame('/assets/img/foo.jpg', $result);
 
 /*
         $result = $this->Helper->image('foo.jpg', ['fullBase' => true]);
@@ -189,13 +155,13 @@ class UrlHelperTest extends AbstractHelperTestCase
 */
 
         $result = $this->Helper->image('dir/sub dir/my image.jpg');
-        $this->assertSame('assets/img/dir/sub%20dir/my%20image.jpg', $result);
+        $this->assertSame('/assets/img/dir/sub%20dir/my%20image.jpg', $result);
 
         $result = $this->Helper->image('foo.jpg?one=two&three=four');
-        $this->assertSame('assets/img/foo.jpg?one=two&amp;three=four', $result);
+        $this->assertSame('/assets/img/foo.jpg?one=two&amp;three=four', $result);
 
         $result = $this->Helper->image('dir/big+tall/image.jpg');
-        $this->assertSame('assets/img/dir/big%2Btall/image.jpg', $result);
+        $this->assertSame('/assets/img/dir/big%2Btall/image.jpg', $result);
 
         $result = $this->Helper->image('cid:foo.jpg');
         $this->assertSame('cid:foo.jpg', $result);
@@ -210,6 +176,6 @@ class UrlHelperTest extends AbstractHelperTestCase
     public function testCss(): void
     {
         $result = $this->Helper->css('style');
-        $this->assertSame('assets/css/style.css', $result);
+        $this->assertSame('/assets/css/style.css', $result);
     }
 }

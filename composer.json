@@ -21,10 +21,7 @@
     "autoload": {
         "psr-4": {
             "Chiron\\View\\": "src/"
-        },
-        "files": [
-            "src/functions.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
@@ -45,25 +42,18 @@
         "captainhook": {
             "force-install": true
         },
-        "chiron/devtools": {
-            "command-prefix": "dev"
-        },
-        "ramsey/conventional-commits": {
-            "configFile": "conventional-commits.json"
-        },
         "chiron": {
             "bootloaders": [
                 "Chiron\\View\\Bootloader\\ViewDirectoryBootloader",
                 "Chiron\\View\\Bootloader\\PublishViewBootloader",
                 "Chiron\\View\\Bootloader\\ViewCommandBootloader"
             ]
+        },
+        "chiron/devtools": {
+            "command-prefix": "dev"
+        },
+        "ramsey/conventional-commits": {
+            "configFile": "conventional-commits.json"
         }
-    },
-    "scripts": {
-        "check-style": "phpcs src tests",
-        "fix-style": "phpcbf src tests",
-        "phpstan": "phpstan analyse --ansi",
-        "phpunit": "phpunit --colors=always",
-        "test-coverage": "phpunit --coverage-clover clover.xml"
     }
 }

@@ -7,7 +7,8 @@ namespace Chiron\View\Native;
 use Chiron\View\ViewContext;
 use Chiron\View\ViewInterface;
 
-//use Chiron\View\Engine\PhpEngine;
+// TODO : gérer les ErrorException lors du try/catch ????
+//https://github.com/narrowspark/framework/blob/9ec6c35634a3941149604a6fec3fa08dd358d35f/src/Viserio/Component/View/Engine/PhpEngine.php#L87
 
 // TODO : ajouter une méthode setParameters() ???? Ca permettrait de faire le merge des paramétres plus haut dans le code (dans la classe Engine ou ViewManager par exemple)
 //https://github.com/yiisoft/view/blob/12b99ef27605f615608b1ef31f3e887968d0c033/src/ViewInterface.php#L139

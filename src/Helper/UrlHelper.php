@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Chiron\View\Helper;
 
+// TODO : créer une méthode (eventuellement la mettre dans la classe Uri du package chiron/http et déplacer cette classe dans le package chiron/http-utils) pour déterminer si l'url est absolute : '/^((https?:)?\/\/|data:)/i'     https://github.com/fisharebest/laravel-assets/blob/main/src/Assets.php#L548
+// TODO : je pense qu'on peut améliorer la regex en évitant d'utiliser le séparateur "/" je pense qu'une expression comme ca doit fonctionner : '#^((https?:)?//|data:)#i'
+
 // TODO : créer un helper dédié aux tableaux !!!! https://github.com/JelmerD/TableHelper/blob/master/src/View/Helper/TableHelper.php
 
 //https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/tests/TestCase/Routing/AssetTest.php
@@ -79,7 +82,7 @@ final class UrlHelper
      *
      * @param \Psr\Http\Message\UriInterface|array|string|null $url An array specifying any of the following:
      *   'controller', 'action', 'plugin' additionally, you can provide routed
-     *   elements or query string parameters. If string it can be name any valid url
+     *   elements or query string parameters. If string it can be any valid url
      *   string or it can be an UriInterface instance.
      * @param bool $full If true, the full base URL will be prepended to the result.
      *   Default is false.
@@ -118,7 +121,7 @@ final class UrlHelper
 
         $protocol = preg_match('#^[a-z][a-z0-9+\-.]*\://#i', $output);
         if ($protocol === 0) {
-            $output = str_replace('//', '/', '/' . $output);
+            $output = str_replace('//', '/', '/' . $output); // TODO : ca peut arriver ce cas là ???
             if ($full) {
                 $output = static::fullBaseUrl() . $output;
             }
@@ -276,6 +279,8 @@ final class UrlHelper
         }
 
         $webPath = config('http')->get('base_path') . $path;
+        // TODO : c'est pas trés propre comme code, il faudrait s'assurer que le base_path se termine par un slash et stripper sur le coté gauche le '/' dans le $path ???
+        // TODO : faire un str_contains au lieu de strpos
         if (strpos($webPath, '//') !== false) {
             return str_replace('//', '/', $webPath);
         }
@@ -303,6 +308,7 @@ final class UrlHelper
      * @param string|bool|null $timestamp If set will overrule the value of `Asset.timestamp` in Configure.
      * @return string Path with a timestamp added, or not.
      */
+    // TODO : passer la méthode en private ???
     public static function assetTimestamp(string $path, string|bool|null $timestamp = null): string
     {
         // Faire un str_contains !!!!
@@ -356,6 +362,7 @@ final class UrlHelper
      * @return string
      */
     // TODO : ne pas utiliser une méthode statique + passer la méthode en private car la classe est en mode "final" !!!!
+    // TODO : déplacer cette méthode dans une classe Uri::class du package chiron/http-utils ???
     protected static function encodeUrl(string $url): string
     {
         // TODO : exemple qui retourne un false lors du parse_url
