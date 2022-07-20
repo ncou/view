@@ -9,6 +9,8 @@ use Chiron\Filesystem\Filesystem;
 use Chiron\View\TemplateRendererInterface;
 use Twig\Environment;
 
+//https://github.com/spiral/framework/blob/23299ff3442a9334494b9481b9adbd2b4a317907/src/Framework/Command/Views/CompileCommand.php#L133
+
 // TODO : virer les références à TWIG !!!!
 
 final class ViewListCommand extends AbstractCommand
